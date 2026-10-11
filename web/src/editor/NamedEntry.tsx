@@ -38,6 +38,8 @@ export function NamedEntry({
           aria-label="Name"
           aria-invalid={invalid}
           spellCheck={false}
+          autoCapitalize="none"
+          autoCorrect="off"
           onChange={(e) => setDraft(e.target.value)}
           onBlur={commit}
           onKeyDown={(e) => {
@@ -45,7 +47,7 @@ export function NamedEntry({
             if (e.key === 'Escape') setDraft(name)
           }}
           className={cn(
-            'h-7 w-56 rounded-md border border-transparent bg-transparent px-2 font-mono text-base font-semibold hover:border-line focus:border-accent focus:bg-surface focus:outline-none',
+            'h-7 w-44 min-w-0 rounded-md border border-transparent bg-transparent px-2 font-mono text-base font-semibold hover:border-line focus:border-accent focus:bg-surface focus:outline-none max-lg:h-9 max-lg:border-line sm:w-56',
             invalid && 'border-danger text-danger',
           )}
         />

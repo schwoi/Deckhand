@@ -1,7 +1,7 @@
 import type { AgentConfig, AgentFile, Json } from '@shared/config'
 import { SAFETY_MODES } from '@shared/config'
 import { Plus, Trash2 } from 'lucide-react'
-import { type ReactNode, useEffect, useMemo, useState } from 'react'
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 import { Button } from '../components/ui/Button'
 import type { Option } from '../components/ui/Combobox'
 import { Combobox } from '../components/ui/Combobox'
@@ -33,6 +33,13 @@ export function AgentsSection({
   const agents = config.agents ?? {}
   const names = orderedAgentNames(config)
   const current = names.includes(selected) ? selected : names[0]
+  const tabs = useRef<HTMLDivElement>(null)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: keep the selected tab in view when it changes
+  useEffect(() => {
+    tabs.current
+      ?.querySelector('[aria-selected="true"]')
+      ?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+  }, [current])
 
   const add = () => {
     const name = uniqueKey(names, names.length === 0 ? 'root' : 'agent')
@@ -43,7 +50,12 @@ export function AgentsSection({
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex flex-wrap items-center gap-1.5" role="tablist" aria-label="Agents">
+      <div
+        ref={tabs}
+        className="no-scrollbar -mx-4 flex items-center gap-1.5 overflow-x-auto px-4 sm:-mx-6 sm:px-6 lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0"
+        role="tablist"
+        aria-label="Agents"
+      >
         {names.map((n) => (
           <button
             key={n}
@@ -52,7 +64,7 @@ export function AgentsSection({
             aria-selected={n === current}
             onClick={() => onSelect(n)}
             className={cn(
-              'flex h-7 items-center gap-1.5 rounded-md border px-2.5 font-mono text-sm transition-colors',
+              'flex h-7 shrink-0 items-center gap-1.5 rounded-md border px-2.5 font-mono text-sm whitespace-nowrap transition-colors max-lg:h-9 max-lg:px-3',
               n === current
                 ? 'border-accent bg-accent-soft text-accent-text'
                 : 'bg-surface text-muted hover:text-fg',
@@ -189,8 +201,8 @@ function AgentForm({
   return (
     <div className="flex flex-col gap-6">
       <section className="flex flex-col gap-4">
-        <div className="flex items-end gap-3">
-          <Field label="Agent name" htmlFor="agent-name" error={nameErr} className="w-64">
+        <div className="flex flex-wrap items-end gap-3">
+          <Field label="Agent name" htmlFor="agent-name" error={nameErr} className="w-full sm:w-64">
             <Input
               id="agent-name"
               mono
@@ -259,7 +271,7 @@ function AgentForm({
             <button
               type="button"
               onClick={() => setMonoInstruction((m) => !m)}
-              className="text-xs text-faint hover:text-fg"
+              className="text-xs text-faint hover:text-fg max-lg:-my-2 max-lg:py-2"
             >
               {monoInstruction ? 'Proportional' : 'Monospace'}
             </button>
@@ -286,7 +298,7 @@ function AgentForm({
         />
       </section>
 
-      <section className="grid grid-cols-2 gap-4">
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field
           label="Sub-agents"
           path={`${path}.sub_agents`}
@@ -364,7 +376,7 @@ function AdvancedAgentFields({
 }) {
   return (
     <div className="flex flex-col gap-5">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field
           label="Safety"
           path={`${path}.safety`}
@@ -395,7 +407,7 @@ function AdvancedAgentFields({
           />
         </Field>
       </div>
-      <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+      <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2 lg:gap-y-3">
         <Switch
           checked={!!agent.readonly}
           onChange={(v) => set('readonly', v || undefined)}
@@ -433,7 +445,7 @@ function AdvancedAgentFields({
           description="Summarize long sessions automatically. On by default."
         />
       </div>
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Field label="Max iterations" path={`${path}.max_iterations`}>
           <NumberInput
             value={agent.max_iterations}

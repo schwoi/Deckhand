@@ -45,13 +45,21 @@ export function Dialog({
         if (e.target === e.currentTarget) onClose()
       }}
       className={cn(
-        'm-auto max-h-[85vh] w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-line-strong bg-surface p-0 text-fg shadow-2xl shadow-black/20 open:flex open:animate-pop-in open:flex-col',
-        { sm: 'max-w-sm', md: 'max-w-lg', lg: 'max-w-2xl' }[width],
+        'overflow-hidden border border-line-strong bg-surface p-0 text-fg shadow-2xl shadow-black/20 open:flex open:flex-col',
+        // phone: bottom sheet
+        'mx-0 mt-auto mb-0 max-h-[90dvh] w-full max-w-none rounded-t-2xl border-b-0 pb-[env(safe-area-inset-bottom)] max-sm:open:animate-sheet-in',
+        // tablet and up: centered card
+        'sm:m-auto sm:max-h-[85dvh] sm:w-[calc(100vw-2rem)] sm:rounded-xl sm:border-b sm:pb-0 sm:open:animate-pop-in',
+        { sm: 'sm:max-w-sm', md: 'sm:max-w-lg', lg: 'sm:max-w-2xl' }[width],
       )}
     >
       {open && (
         <>
-          <header className="flex items-start gap-3 border-b px-5 py-3.5">
+          <div
+            aria-hidden
+            className="mx-auto mt-2 h-1 w-9 shrink-0 rounded-full bg-line-strong sm:hidden"
+          />
+          <header className="flex items-start gap-3 border-b px-4 py-3 sm:px-5 sm:py-3.5">
             <div className="min-w-0 flex-1">
               <h2 className="text-md font-semibold">{title}</h2>
               {description && <p className="mt-0.5 text-sm text-muted">{description}</p>}
@@ -66,9 +74,11 @@ export function Dialog({
               className="-mr-2"
             />
           </header>
-          <div className="dialog-body min-h-0 flex-1 overflow-y-auto px-5 py-4">{children}</div>
+          <div className="dialog-body min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 sm:px-5">
+            {children}
+          </div>
           {footer && (
-            <footer className="flex justify-end gap-2 border-t bg-sunken/60 px-5 py-3">
+            <footer className="flex flex-col-reverse gap-2 border-t bg-sunken/60 px-4 py-3 sm:flex-row sm:justify-end sm:px-5 max-sm:*:min-h-11 max-sm:*:w-full">
               {footer}
             </footer>
           )}

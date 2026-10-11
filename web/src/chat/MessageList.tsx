@@ -42,7 +42,7 @@ export function MessageList({
           case 'user':
             return (
               <div key={item.id} className="flex justify-end">
-                <div className="max-w-[85%] rounded-xl rounded-br-sm border bg-sunken px-3.5 py-2 text-md whitespace-pre-wrap break-words">
+                <div className="max-w-[90%] min-w-0 rounded-xl rounded-br-sm border sm:max-w-[85%] bg-sunken px-3.5 py-2 text-md whitespace-pre-wrap break-words">
                   {item.content}
                 </div>
               </div>
@@ -51,7 +51,10 @@ export function MessageList({
             return (
               <div
                 key={item.id}
-                className={cn('flex flex-col gap-1.5', label && 'border-l-2 border-accent/40 pl-3')}
+                className={cn(
+                  'flex min-w-0 flex-col gap-1.5',
+                  label && 'border-l-2 border-accent/40 pl-3',
+                )}
               >
                 {label && <AgentLabel name={label} />}
                 {item.reasoning && (
@@ -65,7 +68,10 @@ export function MessageList({
             )
           case 'tool':
             return (
-              <div key={item.id} className={cn(label && 'border-l-2 border-accent/40 pl-3')}>
+              <div
+                key={item.id}
+                className={cn('min-w-0', label && 'border-l-2 border-accent/40 pl-3')}
+              >
                 {label && <AgentLabel name={label} />}
                 <ToolCard tool={item} onConfirm={onConfirm} />
               </div>
@@ -119,7 +125,7 @@ function Reasoning({ text, live }: { text: string; live?: boolean }) {
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
-        className="flex items-center gap-1.5 text-xs text-faint hover:text-fg"
+        className="flex items-center gap-1.5 text-xs text-faint hover:text-fg max-lg:min-h-8"
       >
         <ChevronRight className={cn('size-3 transition-transform', open && 'rotate-90')} />
         <Brain className="size-3.5" />
@@ -165,10 +171,12 @@ function ToolCard({
         confirming && 'border-warning/60 ring-3 ring-warning/15',
       )}
     >
-      <div className="flex items-center gap-2 px-3 py-1.5">
-        <Wrench className="size-3.5 text-faint" />
-        <span className="font-mono text-sm font-medium">{tool.name}</span>
-        <span className="ml-auto flex items-center gap-1.5 text-xs text-faint">
+      <div className="flex items-center gap-2 px-3 py-1.5 max-lg:py-2">
+        <Wrench className="size-3.5 shrink-0 text-faint" />
+        <span className="min-w-0 truncate font-mono text-sm font-medium" title={tool.name}>
+          {tool.name}
+        </span>
+        <span className="ml-auto flex shrink-0 items-center gap-1.5 text-xs text-faint">
           {statusIcon[tool.status]}
           {statusText[tool.status]}
         </span>
@@ -179,8 +187,8 @@ function ToolCard({
         </pre>
       )}
       {confirming && onConfirm && (
-        <div className="flex flex-wrap items-center gap-1.5 border-t bg-warning-soft/50 px-3 py-2">
-          <span className="mr-auto text-sm font-medium">Allow this tool call?</span>
+        <div className="flex flex-col gap-2 border-t bg-warning-soft/50 px-3 py-2.5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-1.5 sm:py-2 max-sm:*:min-h-10">
+          <span className="text-sm font-medium sm:mr-auto">Allow this tool call?</span>
           <Button size="xs" variant="primary" onClick={() => onConfirm(tool, 'approve')}>
             Approve
           </Button>
@@ -188,8 +196,9 @@ function ToolCard({
             size="xs"
             onClick={() => onConfirm(tool, 'approve-tool')}
             title={`Approve every ${tool.name} call in this session`}
+            className="min-w-0"
           >
-            Approve all {tool.name}
+            <span className="truncate">Approve all {tool.name}</span>
           </Button>
           <Button
             size="xs"
@@ -209,13 +218,13 @@ function ToolCard({
             type="button"
             onClick={() => setShowResponse((s) => !s)}
             aria-expanded={showResponse}
-            className="flex w-full items-center gap-1.5 px-3 py-1 text-left text-xs text-faint hover:text-fg"
+            className="flex w-full min-w-0 items-center gap-1.5 px-3 py-1 text-left text-xs text-faint hover:text-fg max-lg:py-2.5"
           >
             <ChevronRight
-              className={cn('size-3 transition-transform', showResponse && 'rotate-90')}
+              className={cn('size-3 shrink-0 transition-transform', showResponse && 'rotate-90')}
             />
             Response
-            <span className="truncate font-mono text-2xs opacity-70">
+            <span className="min-w-0 truncate font-mono text-2xs opacity-70">
               {showResponse ? '' : tool.response.slice(0, 120)}
             </span>
           </button>

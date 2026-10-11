@@ -24,13 +24,72 @@ export function App() {
 
 function Shell() {
   const route = useRoute()
+  const section = route.page === 'editor' ? 'agents' : route.page
   return (
-    <div className="flex h-full min-h-0">
-      <Sidebar route={route} />
-      <main className="flex min-w-0 flex-1 flex-col">
+    <div className="flex h-dvh min-h-0 flex-col pt-[env(safe-area-inset-top)] lg:flex-row">
+      <Sidebar section={section} />
+      <main className="flex min-h-0 min-w-0 flex-1 flex-col">
         <Page route={route} />
       </main>
+      <TabBar section={section} />
     </div>
+  )
+}
+
+type Section = 'agents' | 'chat' | 'sessions' | 'system'
+const NAV: { id: Section; to: string; label: string; icon: ReactNode }[] = [
+  { id: 'agents', to: href.agents(), label: 'Agents', icon: <Bot /> },
+  { id: 'chat', to: href.chat(), label: 'Chat', icon: <MessageSquare /> },
+  { id: 'sessions', to: href.sessions(), label: 'Sessions', icon: <History /> },
+  { id: 'system', to: href.system(), label: 'System', icon: <Server /> },
+]
+
+/** Bottom navigation below lg. Part of the flex column, so it never covers page content. */
+function TabBar({ section }: { section: Section }) {
+  const { status, offline } = useRuntime()
+  const state = status?.state ?? 'stopped'
+  return (
+    <nav
+      data-tabbar
+      aria-label="Main"
+      className="flex shrink-0 border-t bg-surface pr-[env(safe-area-inset-right)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] lg:hidden"
+    >
+      {NAV.map((n) => {
+        const active = section === n.id
+        return (
+          <a
+            key={n.id}
+            href={n.to}
+            aria-current={active ? 'page' : undefined}
+            className={cn(
+              'group flex min-h-14 flex-1 select-none flex-col items-center justify-center gap-0.5 text-2xs font-medium transition-colors',
+              active ? 'text-fg' : 'text-faint active:text-fg',
+            )}
+          >
+            <span
+              className={cn(
+                'relative flex h-7 w-14 items-center justify-center rounded-full transition-colors [&_svg]:size-5',
+                active ? 'bg-accent-soft text-accent-text' : 'group-active:bg-hover',
+              )}
+            >
+              {n.icon}
+              {n.id === 'system' && (
+                <span
+                  title={
+                    offline ? 'Runtime unreachable' : `Runtime ${stateLabel[state].toLowerCase()}`
+                  }
+                  className={cn(
+                    'absolute top-0.5 right-3 size-2 rounded-full ring-2 ring-surface',
+                    offline ? 'bg-danger' : stateDot[state],
+                  )}
+                />
+              )}
+            </span>
+            {n.label}
+          </a>
+        )
+      })}
+    </nav>
   )
 }
 
@@ -55,10 +114,9 @@ function Page({ route }: { route: Route }) {
   }
 }
 
-function Sidebar({ route }: { route: Route }) {
-  const section = route.page === 'editor' ? 'agents' : route.page
+function Sidebar({ section }: { section: Section }) {
   return (
-    <aside className="flex w-52 shrink-0 flex-col border-r bg-sunken">
+    <aside className="hidden w-52 shrink-0 flex-col border-r bg-sunken lg:flex">
       <div className="flex h-14 shrink-0 items-center gap-2.5 border-b px-4">
         <Logo />
         <div className="leading-tight">
@@ -67,25 +125,9 @@ function Sidebar({ route }: { route: Route }) {
         </div>
       </div>
       <nav className="flex flex-col gap-0.5 p-2" aria-label="Main">
-        <NavItem to={href.agents()} active={section === 'agents'} icon={<Bot />} label="Agents" />
-        <NavItem
-          to={href.chat()}
-          active={section === 'chat'}
-          icon={<MessageSquare />}
-          label="Chat"
-        />
-        <NavItem
-          to={href.sessions()}
-          active={section === 'sessions'}
-          icon={<History />}
-          label="Sessions"
-        />
-        <NavItem
-          to={href.system()}
-          active={section === 'system'}
-          icon={<Server />}
-          label="System"
-        />
+        {NAV.map((n) => (
+          <NavItem key={n.id} to={n.to} active={section === n.id} icon={n.icon} label={n.label} />
+        ))}
       </nav>
       <div className="mt-auto p-2">
         <RuntimePill />

@@ -27,8 +27,9 @@ export function Input({
   return (
     <input
       id={useFieldId(id)}
+      {...(mono && { autoCapitalize: 'none', autoCorrect: 'off', spellCheck: false })}
       className={cn(
-        'control h-8 w-full min-w-0 px-2.5 text-base placeholder:text-faint',
+        'control h-8 w-full min-w-0 px-2.5 text-base placeholder:text-faint max-lg:h-10',
         mono && 'font-mono text-sm',
         className,
       )}
@@ -84,7 +85,7 @@ export function Textarea({
       id={fieldId}
       rows={minRows}
       className={cn(
-        'control block w-full px-2.5 py-1.5 text-base placeholder:text-faint',
+        'control block w-full px-2.5 py-1.5 text-base placeholder:text-faint max-lg:py-2',
         mono && 'font-mono text-sm leading-relaxed',
         autoGrow ? 'resize-none overflow-hidden' : 'resize-y',
         className,
@@ -104,7 +105,7 @@ export function Select({
     <select
       id={useFieldId(id)}
       className={cn(
-        'control select-chevron h-8 w-full min-w-0 appearance-none pr-7 pl-2.5 text-base',
+        'control select-chevron h-8 w-full min-w-0 appearance-none pr-7 pl-2.5 text-base max-lg:h-10',
         className,
       )}
       {...rest}
@@ -138,14 +139,14 @@ export function Switch({
       disabled={disabled}
       onClick={() => onChange(!checked)}
       className={cn(
-        'relative inline-flex h-[18px] w-[30px] shrink-0 items-center rounded-full border transition-colors disabled:opacity-50',
+        'relative inline-flex h-[18px] w-[30px] shrink-0 items-center rounded-full border transition-colors disabled:opacity-50 max-lg:h-6 max-lg:w-10',
         checked ? 'border-accent bg-accent' : 'border-line-strong bg-sunken',
       )}
     >
       <span
         className={cn(
-          'block size-3 rounded-full bg-white shadow-sm transition-transform',
-          checked ? 'translate-x-[14px]' : 'translate-x-[2px]',
+          'block size-3 rounded-full bg-white shadow-sm transition-transform max-lg:size-[18px]',
+          checked ? 'translate-x-[14px] max-lg:translate-x-[18px]' : 'translate-x-[2px]',
         )}
       />
     </button>
@@ -153,8 +154,8 @@ export function Switch({
   if (!label) return sw
   return (
     // biome-ignore lint/a11y/noLabelWithoutControl: wraps the switch button, which is a labelable element
-    <label className="flex cursor-pointer items-start gap-2.5">
-      <span className="pt-px">{sw}</span>
+    <label className="flex cursor-pointer items-start gap-2.5 max-lg:items-center max-lg:gap-3">
+      <span className="pt-px max-lg:pt-0">{sw}</span>
       <span className="min-w-0 select-none">
         <span className="block text-base text-fg">{label}</span>
         {description && <span className="block text-xs text-faint">{description}</span>}
@@ -196,7 +197,7 @@ export function OptionalBool({
             onClick={() => onChange(v)}
             aria-pressed={value === v}
             className={cn(
-              'h-5 rounded-[4px] px-2 text-xs transition-colors',
+              'h-5 rounded-[4px] px-2 text-xs transition-colors max-lg:h-8 max-lg:px-3',
               value === v ? 'bg-surface text-fg shadow-xs' : 'text-faint hover:text-fg',
             )}
           >

@@ -91,9 +91,15 @@
   --text-xl--line-height: 26px;
   --animate-fade-in: fade-in 120ms ease-out;
   --animate-pop-in: pop-in 140ms cubic-bezier(0.2, 0.9, 0.3, 1.2);
+  --animate-sheet-in: sheet-in 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
   @keyframes fade-in {
     from {
       opacity: 0;
+    }
+  }
+  @keyframes sheet-in {
+    from {
+      transform: translateY(100%);
     }
   }
   @keyframes pop-in {
@@ -114,6 +120,19 @@
   body,
   #root {
     height: 100%;
+  }
+  html,
+  body {
+    overscroll-behavior: none;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+  a,
+  button,
+  summary,
+  label {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
   body {
     background: var(--bg);
@@ -187,4 +206,30 @@
   background-repeat: no-repeat;
   background-position: right 8px center;
   background-size: 14px;
+}
+
+/* hide the scrollbar of horizontally scrolling strips (tabs, chips) */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/*
+ * Unlayered so it beats the text-* utilities: iOS zooms into any focused field under 16px.
+ */
+@media (max-width: 639px) {
+  input:not([type="checkbox"], [type="radio"], [type="range"]),
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
+
+/* While the on-screen keyboard is up, the tab bar only steals space. */
+@media (max-width: 1023px) and (pointer: coarse) {
+  body:has(:is(input:not([type="checkbox"], [type="radio"]), textarea):focus) [data-tabbar] {
+    display: none;
+  }
 }

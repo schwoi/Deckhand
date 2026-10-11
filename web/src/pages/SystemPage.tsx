@@ -51,10 +51,13 @@ export function SystemPage() {
         title="System"
         description="The docker agent CLI, the managed runtime, and what is available on this machine."
       />
-      <div className="min-h-0 flex-1 overflow-y-auto p-6">
+      <div className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-6">
         <div className="mx-auto grid max-w-5xl grid-cols-1 gap-4 lg:grid-cols-2">
           <CliCard />
-          <RuntimeCard />
+          {/* below lg the sidebar runtime pill is gone, so its controls lead the page */}
+          <div className="min-w-0 max-lg:order-first">
+            <RuntimeCard />
+          </div>
           <div className="lg:col-span-2">
             <ProvidersCard />
           </div>
@@ -193,9 +196,9 @@ function RuntimeCard() {
         <LoadingRows />
       ) : (
         <div className="flex flex-col gap-3 px-4 py-3">
-          <dl className="grid grid-cols-[110px_1fr] gap-x-3 gap-y-1.5 text-base">
+          <dl className="grid grid-cols-[96px_1fr] gap-x-3 gap-y-1.5 text-base sm:grid-cols-[110px_1fr]">
             <dt className="text-faint">Status</dt>
-            <dd className="flex items-center gap-2">
+            <dd className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
               <Badge tone={tone[state]}>
                 <Dot tone={tone[state]} />
                 {state}
@@ -206,9 +209,9 @@ function RuntimeCard() {
               )}
             </dd>
             <dt className="text-faint">Listening on</dt>
-            <dd className="truncate font-mono text-sm">{status.listen}</dd>
+            <dd className="min-w-0 truncate font-mono text-sm">{status.listen}</dd>
             <dt className="text-faint">Agents dir</dt>
-            <dd className="truncate font-mono text-sm" title={status.agentsDir}>
+            <dd className="min-w-0 truncate font-mono text-sm" title={status.agentsDir}>
               {status.agentsDir}
             </dd>
           </dl>
@@ -219,7 +222,7 @@ function RuntimeCard() {
           )}
           <pre
             ref={logRef}
-            className="h-44 overflow-auto rounded-md border bg-sunken p-2.5 font-mono text-2xs leading-relaxed whitespace-pre-wrap break-all text-muted"
+            className="h-44 overflow-auto overscroll-contain rounded-md border bg-sunken p-2.5 font-mono text-2xs leading-relaxed whitespace-pre-wrap break-all text-muted max-sm:h-56 max-sm:break-normal max-sm:whitespace-pre"
           >
             {log || 'No log output yet.'}
           </pre>
@@ -242,7 +245,34 @@ function ProvidersCard() {
       {!data && !error && <LoadingRows n={4} />}
       {data && (
         <div className="flex flex-col">
-          <table className="w-full text-base">
+          <ul className="divide-y sm:hidden">
+            {(data.providers ?? []).map((p) => (
+              <li key={p.provider} className="flex flex-col gap-1 px-4 py-2.5">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="min-w-0 truncate font-mono text-sm">{p.provider}</span>
+                  {p.found ? (
+                    <Badge tone="success" title={p.source}>
+                      found{p.source ? ` · ${p.source}` : ''}
+                    </Badge>
+                  ) : (
+                    <Badge>missing</Badge>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-x-2 gap-y-0.5">
+                  {p.env_vars?.length ? (
+                    p.env_vars.map((v) => (
+                      <span key={v} className="font-mono text-xs break-all text-muted">
+                        {v}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-xs text-faint">none required</span>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+          <table className="hidden w-full text-base sm:table">
             <thead>
               <tr className="border-b text-left text-xs text-faint">
                 <th className="px-4 py-1.5 font-medium">Provider</th>
@@ -348,13 +378,15 @@ function SearchBox({
   placeholder,
 }: { value: string; onChange: (v: string) => void; placeholder: string }) {
   return (
-    <div className="control flex h-7 w-44 items-center gap-1.5 px-2">
+    <div className="control flex h-7 w-full items-center gap-1.5 px-2 max-lg:h-10 max-lg:px-2.5 sm:w-44">
       <Search className="size-3.5 shrink-0 text-faint" />
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         aria-label={placeholder}
+        type="search"
+        enterKeyHint="search"
         className="w-full min-w-0 bg-transparent text-sm outline-none placeholder:text-faint"
       />
     </div>
@@ -403,7 +435,7 @@ function ModelsCard() {
                 <li key={m.model} className="flex items-center gap-2 py-0.5">
                   <button
                     type="button"
-                    className="truncate text-left font-mono text-xs hover:text-accent-text"
+                    className="truncate text-left font-mono text-xs hover:text-accent-text max-lg:py-1.5"
                     title="Copy provider/model"
                     onClick={() => navigator.clipboard.writeText(`${m.provider}/${m.model}`)}
                   >
@@ -439,16 +471,19 @@ function ToolsetsCard() {
         {!data && !error && <LoadingRows n={6} />}
         <ul className="divide-y">
           {list.map((t) => (
-            <li key={t.type} className="flex items-start gap-3 px-4 py-2">
-              <span className="w-32 shrink-0 font-mono text-sm font-medium">{t.type}</span>
-              <span className="min-w-0 flex-1 text-sm text-muted">{t.summary}</span>
+            <li key={t.type} className="flex items-start gap-3 px-4 py-2 max-sm:py-2.5">
+              <div className="flex min-w-0 flex-1 flex-col gap-0.5 sm:flex-row sm:gap-3">
+                <span className="font-mono text-sm font-medium sm:w-32 sm:shrink-0">{t.type}</span>
+                <span className="min-w-0 flex-1 text-sm text-muted">{t.summary}</span>
+              </div>
               {t.docs && (
                 <a
                   href={t.docs}
                   target="_blank"
                   rel="noreferrer"
-                  className="shrink-0 text-faint hover:text-accent-text"
+                  className="shrink-0 text-faint hover:text-accent-text max-lg:-m-2 max-lg:p-2"
                   title="Documentation"
+                  aria-label={`${t.type} documentation`}
                 >
                   <ExternalLink className="size-3.5" />
                 </a>

@@ -1,5 +1,13 @@
 import type { RuntimeSessionSummary } from '@shared/api'
-import { History, MessageSquare, RefreshCw, Trash2, X } from 'lucide-react'
+import {
+  ChevronLeft,
+  ChevronRight,
+  History,
+  MessageSquare,
+  RefreshCw,
+  Trash2,
+  X,
+} from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { type RuntimeSession, api, errorText } from '../api'
 import { MessageList } from '../chat/MessageList'
@@ -13,19 +21,27 @@ import { cn, formatCost, formatTokens, relativeTime } from '../lib/util'
 import { href, navigate } from '../router'
 
 export function SessionsPage() {
+  const [selected, setSelected] = useState<string | null>(null)
   return (
     <>
-      <PageHeader title="Sessions" description="Conversations stored by the runtime." />
+      <PageHeader
+        title="Sessions"
+        description="Conversations stored by the runtime."
+        // below lg an open session takes over the page and brings its own header
+        className={cn(selected && 'max-lg:hidden')}
+      />
       <RuntimeGate purpose="Browsing sessions">
-        <SessionsView />
+        <SessionsView selected={selected} setSelected={setSelected} />
       </RuntimeGate>
     </>
   )
 }
 
-function SessionsView() {
+function SessionsView({
+  selected,
+  setSelected,
+}: { selected: string | null; setSelected: (id: string | null) => void }) {
   const [sessions, setSessions] = useState<RuntimeSessionSummary[] | null>(null)
-  const [selected, setSelected] = useState<string | null>(null)
   const [refreshing, setRefreshing] = useState(false)
 
   const load = useCallback(async () => {
@@ -66,9 +82,9 @@ function SessionsView() {
 
   return (
     <div className="flex min-h-0 flex-1">
-      <div className="min-w-0 flex-1 overflow-y-auto">
+      <div className={cn('min-w-0 flex-1 overflow-y-auto', current && 'max-lg:hidden')}>
         {!sessions ? (
-          <div className="flex flex-col gap-2 p-6">
+          <div className="flex flex-col gap-2 p-4 sm:p-6">
             {[0, 1, 2, 3].map((i) => (
               <Skeleton key={i} className="h-9" />
             ))}
@@ -82,79 +98,130 @@ function SessionsView() {
             action={<Button onClick={() => navigate(href.chat())}>Start a chat</Button>}
           />
         ) : (
-          <table className="w-full border-collapse text-base">
-            <thead className="sticky top-0 z-10 bg-canvas">
-              <tr className="border-b text-left text-xs text-faint">
-                <th className="px-6 py-2 font-medium">Title</th>
-                <th className="px-3 py-2 font-medium">Created</th>
-                <th className="px-3 py-2 text-right font-medium">Messages</th>
-                <th className="px-3 py-2 text-right font-medium">Tokens in / out</th>
-                <th className="px-3 py-2 text-right font-medium">Cost</th>
-                <th className="w-12 px-3 py-2">
-                  <Button
-                    size="xs"
-                    variant="ghost"
-                    iconOnly
-                    icon={<RefreshCw className={cn(refreshing && 'animate-spin')} />}
-                    title="Refresh"
-                    onClick={load}
-                  />
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {sessions.map((s) => (
-                // biome-ignore lint/a11y/useKeyWithClickEvents: the title button is the keyboard target
-                <tr
-                  key={s.id}
-                  onClick={() => setSelected(s.id)}
-                  className={cn(
-                    'cursor-pointer border-b transition-colors',
-                    s.id === selected ? 'bg-accent-soft/50' : 'hover:bg-hover',
-                  )}
-                >
-                  <td className="max-w-0 px-6 py-2">
+          <>
+            <div className="sm:hidden">
+              <div className="sticky top-0 z-10 flex items-center justify-between border-b bg-canvas py-1 pr-2 pl-4 text-xs text-faint">
+                {sessions.length} session{sessions.length === 1 ? '' : 's'}
+                <Button
+                  size="xs"
+                  variant="ghost"
+                  iconOnly
+                  icon={<RefreshCw className={cn(refreshing && 'animate-spin')} />}
+                  title="Refresh"
+                  onClick={load}
+                />
+              </div>
+              <ul className="divide-y border-b">
+                {sessions.map((s) => (
+                  <li key={s.id} className="flex items-center">
                     <button
                       type="button"
-                      className="block w-full truncate text-left font-medium focus-visible:outline-offset-0"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setSelected(s.id)
-                      }}
+                      onClick={() => setSelected(s.id)}
+                      className="flex min-w-0 flex-1 items-center gap-3 py-3 pl-4 text-left active:bg-hover"
                     >
-                      {s.title || <span className="text-faint italic">Untitled</span>}
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-md font-medium">
+                          {s.title || (
+                            <span className="font-normal text-faint italic">Untitled</span>
+                          )}
+                        </span>
+                        <span className="mt-0.5 block truncate text-xs text-muted">
+                          {relativeTime(s.created_at)} · {s.num_messages} message
+                          {s.num_messages === 1 ? '' : 's'}
+                          {s.cost ? ` · ${formatCost(s.cost)}` : ''}
+                        </span>
+                      </span>
+                      <ChevronRight className="size-4 shrink-0 text-faint" />
                     </button>
-                  </td>
-                  <td
-                    className="px-3 py-2 whitespace-nowrap text-muted"
-                    title={new Date(s.created_at).toLocaleString()}
-                  >
-                    {relativeTime(s.created_at)}
-                  </td>
-                  <td className="px-3 py-2 text-right text-muted tabular-nums">{s.num_messages}</td>
-                  <td className="px-3 py-2 text-right font-mono text-xs whitespace-nowrap text-muted tabular-nums">
-                    {formatTokens(s.input_tokens)} / {formatTokens(s.output_tokens)}
-                  </td>
-                  <td className="px-3 py-2 text-right font-mono text-xs text-muted tabular-nums">
-                    {s.cost ? formatCost(s.cost) : '—'}
-                  </td>
-                  <td className="px-3 py-2">
                     <Button
-                      size="xs"
+                      size="sm"
                       variant="danger-ghost"
                       iconOnly
                       icon={<Trash2 />}
                       title="Delete session"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        remove(s)
-                      }}
+                      className="mx-1.5 min-h-10 min-w-10"
+                      onClick={() => remove(s)}
                     />
-                  </td>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <table className="hidden w-full border-collapse text-base sm:table">
+              <thead className="sticky top-0 z-10 bg-canvas">
+                <tr className="border-b text-left text-xs text-faint">
+                  <th className="px-6 py-2 font-medium">Title</th>
+                  <th className="px-3 py-2 font-medium">Created</th>
+                  <th className="px-3 py-2 text-right font-medium">Messages</th>
+                  <th className="px-3 py-2 text-right font-medium">Tokens in / out</th>
+                  <th className="px-3 py-2 text-right font-medium">Cost</th>
+                  <th className="w-12 px-3 py-2">
+                    <Button
+                      size="xs"
+                      variant="ghost"
+                      iconOnly
+                      icon={<RefreshCw className={cn(refreshing && 'animate-spin')} />}
+                      title="Refresh"
+                      onClick={load}
+                    />
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {sessions.map((s) => (
+                  // biome-ignore lint/a11y/useKeyWithClickEvents: the title button is the keyboard target
+                  <tr
+                    key={s.id}
+                    onClick={() => setSelected(s.id)}
+                    className={cn(
+                      'cursor-pointer border-b transition-colors',
+                      s.id === selected ? 'bg-accent-soft/50' : 'hover:bg-hover',
+                    )}
+                  >
+                    <td className="max-w-0 px-6 py-2">
+                      <button
+                        type="button"
+                        className="block w-full truncate text-left font-medium focus-visible:outline-offset-0"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setSelected(s.id)
+                        }}
+                      >
+                        {s.title || <span className="text-faint italic">Untitled</span>}
+                      </button>
+                    </td>
+                    <td
+                      className="px-3 py-2 whitespace-nowrap text-muted"
+                      title={new Date(s.created_at).toLocaleString()}
+                    >
+                      {relativeTime(s.created_at)}
+                    </td>
+                    <td className="px-3 py-2 text-right text-muted tabular-nums">
+                      {s.num_messages}
+                    </td>
+                    <td className="px-3 py-2 text-right font-mono text-xs whitespace-nowrap text-muted tabular-nums">
+                      {formatTokens(s.input_tokens)} / {formatTokens(s.output_tokens)}
+                    </td>
+                    <td className="px-3 py-2 text-right font-mono text-xs text-muted tabular-nums">
+                      {s.cost ? formatCost(s.cost) : '—'}
+                    </td>
+                    <td className="px-3 py-2">
+                      <Button
+                        size="xs"
+                        variant="danger-ghost"
+                        iconOnly
+                        icon={<Trash2 />}
+                        title="Delete session"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          remove(s)
+                        }}
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </>
         )}
       </div>
       {current && (
@@ -185,15 +252,32 @@ function SessionPanel({
   const items = useMemo(() => (session ? historyToItems(session) : []), [session])
   const rootAgent = items.find((i) => i.kind === 'assistant')
   return (
-    <aside className="flex w-[min(560px,48%)] shrink-0 animate-fade-in flex-col border-l bg-surface">
-      <div className="flex items-start gap-2 border-b px-4 py-3">
+    <aside className="flex min-w-0 flex-1 animate-fade-in flex-col bg-surface lg:w-[min(560px,48%)] lg:flex-none lg:shrink-0 lg:border-l">
+      <div className="flex min-h-14 items-center gap-2 border-b py-2 pr-4 pl-1 lg:min-h-0 lg:items-start lg:py-3 lg:pl-4">
+        <Button
+          size="sm"
+          variant="ghost"
+          iconOnly
+          icon={<ChevronLeft />}
+          title="Back to sessions"
+          className="lg:hidden [&_svg]:size-5!"
+          onClick={onClose}
+        />
         <div className="min-w-0 flex-1">
           <h2 className="truncate text-md font-semibold">{summary.title || 'Untitled session'}</h2>
           <p className="truncate font-mono text-2xs text-faint">{summary.id}</p>
         </div>
-        <Button size="sm" variant="ghost" iconOnly icon={<X />} title="Close" onClick={onClose} />
+        <Button
+          size="sm"
+          variant="ghost"
+          iconOnly
+          icon={<X />}
+          title="Close"
+          className="max-lg:hidden"
+          onClick={onClose}
+        />
       </div>
-      <div className="flex items-center gap-1.5 border-b px-4 py-2">
+      <div className="flex items-center gap-1.5 border-b px-4 py-2 max-sm:*:flex-1">
         <Button
           size="sm"
           variant="primary"

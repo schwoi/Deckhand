@@ -53,13 +53,13 @@ export function CardHeader({
   icon,
 }: { title: ReactNode; description?: ReactNode; actions?: ReactNode; icon?: ReactNode }) {
   return (
-    <div className="flex items-center gap-3 border-b px-4 py-3">
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-2.5 border-b px-4 py-3 sm:flex-nowrap">
       {icon && <div className="text-faint [&_svg]:size-4">{icon}</div>}
       <div className="min-w-0 flex-1">
         <h3 className="text-md font-semibold">{title}</h3>
         {description && <p className="text-sm text-muted">{description}</p>}
       </div>
-      {actions && <div className="flex items-center gap-1.5">{actions}</div>}
+      {actions && <div className="flex items-center gap-1.5 max-sm:w-full">{actions}</div>}
     </div>
   )
 }
@@ -127,7 +127,7 @@ export function Tabs<T extends string>({
           aria-selected={value === t.value}
           onClick={() => onChange(t.value)}
           className={cn(
-            'h-6 rounded-[5px] px-2.5 text-sm font-medium transition-colors',
+            'h-6 rounded-[5px] px-2.5 text-sm font-medium transition-colors max-lg:h-8 max-lg:px-3',
             value === t.value ? 'bg-surface text-fg shadow-xs' : 'text-muted hover:text-fg',
           )}
         >
@@ -146,7 +146,7 @@ export function Disclosure({
 }: { title: ReactNode; children: ReactNode; defaultOpen?: boolean; className?: string }) {
   return (
     <details open={defaultOpen} className={cn('group', className)}>
-      <summary className="flex cursor-pointer select-none list-none items-center gap-1.5 rounded text-sm font-medium text-muted hover:text-fg [&::-webkit-details-marker]:hidden">
+      <summary className="flex cursor-pointer select-none list-none items-center gap-1.5 rounded text-sm font-medium text-muted hover:text-fg max-lg:min-h-10 [&::-webkit-details-marker]:hidden">
         <ChevronRight className="size-3.5 transition-transform group-open:rotate-90" />
         {title}
       </summary>
@@ -174,15 +174,28 @@ export function PageHeader({
   description,
   actions,
   children,
-}: { title: ReactNode; description?: ReactNode; actions?: ReactNode; children?: ReactNode }) {
+  className,
+}: {
+  title: ReactNode
+  description?: ReactNode
+  actions?: ReactNode
+  /** extra header content (e.g. a search box); takes its own full-width row below lg */
+  children?: ReactNode
+  className?: string
+}) {
   return (
-    <header className="flex h-14 shrink-0 items-center gap-4 border-b bg-surface px-6">
+    <header
+      className={cn(
+        'flex min-h-14 shrink-0 flex-wrap items-center gap-x-4 gap-y-2.5 border-b bg-surface px-4 py-2.5 sm:px-6 lg:h-14 lg:flex-nowrap lg:py-0',
+        className,
+      )}
+    >
       <div className="min-w-0 flex-1">
-        <h1 className="truncate text-md font-semibold">{title}</h1>
+        <h1 className="truncate text-lg font-semibold lg:text-md">{title}</h1>
         {description && <p className="truncate text-xs text-muted">{description}</p>}
       </div>
-      {children}
-      {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
+      {actions && <div className="flex shrink-0 items-center gap-2 lg:order-last">{actions}</div>}
+      {children && <div className="w-full lg:w-auto">{children}</div>}
     </header>
   )
 }

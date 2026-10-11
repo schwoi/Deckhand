@@ -115,7 +115,7 @@ export function ModelsSection({
               onRemove={() => removeModel(name)}
               meta={users.length ? `used by ${users.join(', ')}` : 'unused'}
             >
-              <div className="grid grid-cols-[200px_1fr] gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-[200px_1fr]">
                 <Field label="Provider" path={`models.${name}.provider`}>
                   <Combobox
                     mono
@@ -134,7 +134,7 @@ export function ModelsSection({
                   />
                 </Field>
               </div>
-              <div className="grid grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                 <Field label="Max tokens" help="Output budget, not context.">
                   <NumberInput
                     value={m.max_tokens}
@@ -172,7 +172,7 @@ export function ModelsSection({
                   />
                 </Field>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <Field label="Base URL" help="For OpenAI-compatible endpoints.">
                   <Input
                     mono
@@ -257,7 +257,7 @@ export function ModelsSection({
               }}
               onRemove={() => setProviders(omitKey(providers, name))}
             >
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <Field label="Provider type" help="Defaults to openai.">
                   <Combobox
                     mono

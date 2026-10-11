@@ -12,8 +12,8 @@ export function RuntimeGate({ children, purpose }: { children: ReactNode; purpos
 
   const starting = status?.state === 'starting'
   return (
-    <div className="m-auto w-full max-w-xl p-6">
-      <div className="rounded-xl border bg-surface p-6">
+    <div className="m-auto w-full max-w-xl p-4 sm:p-6">
+      <div className="rounded-xl border bg-surface p-4 sm:p-6">
         <div className="flex items-start gap-3">
           <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-accent-soft text-accent-text">
             <PlugZap className="size-[18px]" />
@@ -37,7 +37,7 @@ export function RuntimeGate({ children, purpose }: { children: ReactNode; purpos
               </p>
             )}
             {!offline && (
-              <div className="mt-4 flex items-center gap-3">
+              <div className="mt-4 flex flex-wrap items-center gap-3">
                 <Button
                   variant="primary"
                   icon={<Play />}

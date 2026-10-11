@@ -79,7 +79,7 @@ export function YamlEditor({
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="flex shrink-0 items-center gap-3 border-b bg-surface px-4 py-2">
+      <div className="flex shrink-0 items-center gap-3 border-b bg-surface px-3 py-2 sm:px-4">
         <p className="flex-1 text-xs text-faint">
           Edits in the form rewrite this YAML (comments are not preserved).{' '}
           <span className="hidden xl:inline">Tab indents · Esc then Tab leaves the editor.</span>
@@ -98,10 +98,10 @@ export function YamlEditor({
         </div>
       )}
       <div className="min-h-0 flex-1 overflow-auto bg-surface">
-        <div className="flex min-h-full font-mono text-sm leading-[20px]">
+        <div className="flex min-h-full font-mono text-sm leading-[20px] max-sm:leading-6">
           <div
             aria-hidden
-            className="shrink-0 border-r bg-sunken py-3 pr-2 pl-3 text-right text-faint select-none"
+            className="hidden shrink-0 border-r bg-sunken py-3 pr-2 pl-3 text-right text-faint select-none sm:block"
           >
             {Array.from({ length: lines }, (_, i) => (
               // biome-ignore lint/suspicious/noArrayIndexKey: line numbers
@@ -116,9 +116,12 @@ export function YamlEditor({
             onChange={(e) => onChange(e.target.value)}
             onKeyDown={onKeyDown}
             spellCheck={false}
+            autoCapitalize="none"
+            autoCorrect="off"
+            autoComplete="off"
             wrap="off"
             aria-label="YAML source"
-            className="min-w-0 flex-1 resize-none overflow-x-auto overflow-y-hidden bg-transparent px-4 py-3 outline-none"
+            className="min-w-0 flex-1 resize-none overflow-x-auto overflow-y-hidden bg-transparent px-3 py-3 outline-none sm:px-4"
           />
         </div>
       </div>

@@ -90,7 +90,7 @@ export function Combobox({
   let lastGroup: string | undefined
   return (
     <div className={cn('relative min-w-0', className)}>
-      <div className="control flex h-8 items-center">
+      <div className="control flex h-8 items-center max-lg:h-10">
         {leading}
         <input
           id={inputId}
@@ -100,6 +100,8 @@ export function Combobox({
           aria-autocomplete="list"
           aria-invalid={invalid}
           autoComplete="off"
+          autoCapitalize="none"
+          autoCorrect="off"
           spellCheck={false}
           value={value}
           placeholder={placeholder}
@@ -126,7 +128,7 @@ export function Combobox({
           // biome-ignore lint/a11y/useSemanticElements: custom-styled ARIA widget
           role="listbox"
           tabIndex={-1}
-          className="absolute top-full right-0 left-0 z-30 mt-1 max-h-64 animate-fade-in overflow-y-auto rounded-md border border-line-strong bg-surface p-1 shadow-lg shadow-black/10"
+          className="absolute top-full right-0 left-0 z-30 mt-1 max-h-64 animate-fade-in overscroll-contain overflow-y-auto rounded-md border border-line-strong bg-surface p-1 shadow-lg shadow-black/10"
         >
           {filtered.map((o, i) => {
             const header = o.group && o.group !== lastGroup ? o.group : null
@@ -149,7 +151,7 @@ export function Combobox({
                   }}
                   onMouseEnter={() => setActive(i)}
                   className={cn(
-                    'flex cursor-pointer items-baseline gap-2 rounded px-2 py-1 text-base',
+                    'flex min-w-0 cursor-pointer items-baseline gap-2 rounded px-2 py-1 text-base max-lg:py-2.5',
                     i === active && 'bg-hover',
                     o.value === value && 'text-accent-text',
                   )}
@@ -158,7 +160,9 @@ export function Combobox({
                     {o.label ?? o.value}
                   </span>
                   {o.hint && (
-                    <span className="ml-auto shrink-0 truncate text-xs text-faint">{o.hint}</span>
+                    <span className="ml-auto min-w-0 shrink truncate text-xs text-faint">
+                      {o.hint}
+                    </span>
                   )}
                 </div>
               </div>

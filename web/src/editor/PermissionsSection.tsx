@@ -54,7 +54,7 @@ export function PermissionsSection({
           <Code>mcp:github:get_*</Code>), or arguments with <Code>tool:arg=glob</Code> (
           <Code>shell:cmd=git status*</Code>).
         </div>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
           {lists.map((l) => (
             <Field key={l.key} label={l.label} help={l.help} path={`permissions.${l.key}`}>
               <StringListEditor
@@ -74,7 +74,7 @@ export function PermissionsSection({
           description="Defaults only: CLI flags and user settings still take precedence."
         />
         <Field label="Safety mode" path="runtime.safety">
-          <div className="grid grid-cols-2 gap-1.5" role="radiogroup">
+          <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2" role="radiogroup">
             {[undefined, ...SAFETY_MODES].map((m) => {
               const active = runtime.safety === m
               return (
@@ -125,7 +125,7 @@ export function PermissionsSection({
           title="Budget"
           description="Per-run ceilings shared by all sub-agents. Exceeding one stops the run."
         />
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field
             label="Max cost (USD)"
             path="budget.max_cost"

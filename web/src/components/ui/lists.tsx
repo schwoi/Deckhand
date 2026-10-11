@@ -151,7 +151,7 @@ export function KeyValueEditor({
             {multilineValues ? (
               <textarea
                 rows={1}
-                className="control min-h-8 w-full resize-y px-2.5 py-1.5 text-base placeholder:text-faint"
+                className="control min-h-8 w-full resize-y px-2.5 py-1.5 text-base placeholder:text-faint max-lg:min-h-10 max-lg:py-2"
                 value={v}
                 placeholder={valuePlaceholder}
                 onChange={(e) => update(rows.map((r, j) => (j === i ? [r[0], e.target.value] : r)))}
@@ -231,7 +231,7 @@ export function TagInput({
             <span
               key={t}
               className={cn(
-                'inline-flex h-6 items-center gap-1 rounded-md border bg-sunken pr-0.5 pl-2 text-sm',
+                'inline-flex h-6 items-center gap-1 rounded-md border bg-sunken pr-0.5 pl-2 text-sm max-lg:h-8',
                 mono && 'font-mono text-xs',
               )}
             >
@@ -239,7 +239,7 @@ export function TagInput({
               <button
                 type="button"
                 onClick={() => onChange(tags.filter((x) => x !== t))}
-                className="rounded p-0.5 text-faint hover:bg-hover hover:text-fg"
+                className="rounded p-0.5 text-faint hover:bg-hover hover:text-fg max-lg:p-1.5"
                 aria-label={`Remove ${t}`}
               >
                 <X className="size-3" />

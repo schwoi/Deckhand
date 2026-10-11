@@ -80,18 +80,25 @@ export function AgentsPage() {
         }
         actions={
           <>
-            <Button icon={<Download />} onClick={() => setDialog('import')}>
-              Import from registry
+            <Button
+              icon={<Download />}
+              collapse="sm"
+              title="Import from registry"
+              onClick={() => setDialog('import')}
+            >
+              Import<span className="max-lg:hidden"> from registry</span>
             </Button>
             <Button variant="primary" icon={<Plus />} onClick={() => setDialog('new')}>
-              New agent
+              New<span className="max-sm:hidden"> agent</span>
             </Button>
           </>
         }
       >
-        <div className="control flex h-8 w-64 items-center gap-2 px-2.5">
+        <div className="control flex h-8 w-full items-center gap-2 px-2.5 max-lg:h-10 lg:w-64">
           <Search className="size-3.5 shrink-0 text-faint" />
           <input
+            type="search"
+            enterKeyHint="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search agents"
@@ -101,9 +108,9 @@ export function AgentsPage() {
         </div>
       </PageHeader>
 
-      <div className="min-h-0 flex-1 overflow-y-auto p-6">
+      <div className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-6">
         {!filtered ? (
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-[repeat(auto-fill,minmax(300px,1fr))]">
             {[0, 1, 2].map((i) => (
               <Skeleton key={i} className="h-44" />
             ))}
@@ -131,7 +138,7 @@ export function AgentsPage() {
             description={`Nothing matches “${query}”.`}
           />
         ) : (
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-[repeat(auto-fill,minmax(300px,1fr))]">
             {filtered.map((a) => (
               <AgentCard
                 key={a.name}
@@ -209,10 +216,13 @@ function AgentCard({
         )}
       </div>
       <div className="relative z-10 flex items-center gap-1 border-t px-2 py-1.5">
-        <span className="flex-1 pl-2 text-xs text-faint">Updated {relativeTime(a.updatedAt)}</span>
+        <span className="min-w-0 flex-1 truncate pl-2 text-xs text-faint">
+          Updated {relativeTime(a.updatedAt)}
+        </span>
         <Button
           size="xs"
           variant="ghost"
+          className="max-lg:min-h-10"
           icon={<MessageSquare />}
           disabled={!a.valid}
           title={a.valid ? 'Chat with this agent' : 'Fix validation issues first'}
@@ -225,6 +235,7 @@ function AgentCard({
           variant="ghost"
           iconOnly
           icon={<Copy />}
+          className="max-lg:min-h-10 max-lg:min-w-10"
           title="Duplicate"
           onClick={onDuplicate}
         />
@@ -233,6 +244,7 @@ function AgentCard({
           variant="danger-ghost"
           iconOnly
           icon={<Trash2 />}
+          className="max-lg:min-h-10 max-lg:min-w-10"
           title="Delete"
           onClick={onDelete}
         />
@@ -328,7 +340,7 @@ function NewAgentDialog({
             <label
               key={t.id}
               className={cn(
-                'flex cursor-pointer items-start gap-2.5 rounded-md border px-3 py-2 transition-colors',
+                'flex cursor-pointer items-start gap-2.5 rounded-md border px-3 py-2 transition-colors max-lg:py-3',
                 template === t.id ? 'border-accent bg-accent-soft/50' : 'hover:bg-hover',
               )}
             >
@@ -338,7 +350,7 @@ function NewAgentDialog({
                 value={t.id}
                 checked={template === t.id}
                 onChange={() => setTemplate(t.id)}
-                className="mt-1 accent-[var(--accent)]"
+                className="mt-1 shrink-0 accent-[var(--accent)] max-lg:size-4"
               />
               <span className="min-w-0">
                 <span className="block text-base font-medium">{t.title}</span>
@@ -507,12 +519,12 @@ function ImportDialog({
         >
           <Input id="pull-name" mono value={name} onChange={(e) => setName(e.target.value)} />
         </Field>
-        <label className="flex items-center gap-2 text-base">
+        <label className="flex items-center gap-2 text-base max-lg:min-h-10 max-lg:gap-3">
           <input
             type="checkbox"
             checked={force}
             onChange={(e) => setForce(e.target.checked)}
-            className="accent-[var(--accent)]"
+            className="shrink-0 accent-[var(--accent)] max-lg:size-5"
           />
           Overwrite an existing agent with the same name
         </label>

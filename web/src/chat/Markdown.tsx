@@ -102,7 +102,7 @@ function CodeBlock({ lang, code }: { lang: string; code: string }) {
               window.setTimeout(() => setCopied(false), 1200)
             })
           }}
-          className="flex items-center gap-1 text-2xs text-faint hover:text-fg"
+          className="flex items-center gap-1 text-2xs text-faint hover:text-fg max-lg:-my-1 max-lg:py-1.5 max-lg:pl-2"
         >
           {copied ? <Check className="size-3" /> : <Copy className="size-3" />}
           {copied ? 'Copied' : 'Copy'}

@@ -71,7 +71,7 @@ export function ToolsetList({
                 type="button"
                 onClick={() => toggle(i)}
                 aria-expanded={isOpen}
-                className="flex min-w-0 flex-1 items-center gap-2 rounded-md px-2.5 py-2 text-left"
+                className="flex min-w-0 flex-1 items-center gap-2 rounded-md px-2.5 py-2 text-left max-lg:min-h-11"
               >
                 <ChevronRight
                   className={cn(
@@ -372,7 +372,7 @@ function ToolsetPicker({
 
   return (
     <Dialog open={open} onClose={onClose} title="Add toolset" width="lg">
-      <div className="control mb-4 flex h-8 items-center gap-2 px-2.5">
+      <div className="control mb-4 flex h-8 items-center gap-2 px-2.5 max-lg:h-10">
         <Search className="size-3.5 text-faint" />
         <input
           // biome-ignore lint/a11y/noAutofocus: primary input of this view
@@ -392,7 +392,7 @@ function ToolsetPicker({
             <h3 className="mb-1.5 text-2xs font-semibold tracking-wide text-faint uppercase">
               {g.title}
             </h3>
-            <div className="grid grid-cols-2 gap-1.5">
+            <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
               {g.items.map((m) => {
                 const added = used.includes(m.type) && m.type !== 'mcp'
                 return (

@@ -78,7 +78,7 @@ export function McpForm({
             </>
           }
         >
-          <div className="control flex h-8 items-center">
+          <div className="control flex h-8 items-center max-lg:h-10">
             <span className="pl-2.5 font-mono text-sm text-faint">docker:</span>
             <input
               className="h-full w-full min-w-0 bg-transparent pr-2.5 font-mono text-sm outline-none placeholder:text-faint"
@@ -150,7 +150,7 @@ export function McpForm({
 
       {mode === 'remote' && (
         <>
-          <div className="grid grid-cols-[1fr_160px] gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_160px]">
             <Field label="URL" path={`${path}.remote.url`}>
               <Input
                 mono

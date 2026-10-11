@@ -1,5 +1,14 @@
 import type { AgentSummary } from '@shared/api'
-import { ArrowUp, Bot, ChevronDown, MessageSquarePlus, Pencil, Square } from 'lucide-react'
+import {
+  ArrowUp,
+  Bot,
+  ChevronDown,
+  MessageSquarePlus,
+  Pencil,
+  ShieldCheck,
+  ShieldQuestion,
+  Square,
+} from 'lucide-react'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { type Confirmation, type StreamEvent, type Usage, api, errorText } from '../api'
 import { MessageList } from '../chat/MessageList'
@@ -16,6 +25,7 @@ import { Button } from '../components/ui/Button'
 import { Switch } from '../components/ui/form'
 import { EmptyState, PageHeader, Skeleton, Spinner } from '../components/ui/misc'
 import { toast } from '../components/ui/toast'
+import { useMediaQuery } from '../lib/media'
 import { cn, formatCost, formatTokens } from '../lib/util'
 import { href, navigate } from '../router'
 
@@ -57,8 +67,8 @@ function AgentPicker({ session }: { session?: string }) {
           session ? 'Pick the agent to continue this session with.' : 'Pick an agent to talk to.'
         }
       />
-      <div className="min-h-0 flex-1 overflow-y-auto p-6">
-        <div className="mx-auto flex max-w-xl flex-col gap-1.5">
+      <div className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-6">
+        <div className="mx-auto flex max-w-xl flex-col gap-1.5 max-lg:gap-2">
           {!agents && [0, 1, 2].map((i) => <Skeleton key={i} className="h-14" />)}
           {agents && valid.length === 0 && (
             <EmptyState
@@ -85,7 +95,10 @@ function AgentPicker({ session }: { session?: string }) {
                 <div className="font-mono text-base font-medium">{a.name}</div>
                 <div className="truncate text-sm text-muted">{a.description || a.rootModel}</div>
               </div>
-              <span className="shrink-0 font-mono text-xs text-faint">{a.rootModel}</span>
+              <span className="shrink-0 font-mono text-xs text-faint max-sm:hidden">
+                {a.rootModel}
+              </span>
+              <ChevronDown className="size-4 shrink-0 -rotate-90 text-faint sm:hidden" />
             </a>
           ))}
           {agents && agents.length > valid.length && valid.length > 0 && (
@@ -150,6 +163,8 @@ function ChatView({
   const scrollRef = useRef<HTMLDivElement>(null)
   const stickToBottom = useRef(true)
   const inputRef = useRef<HTMLTextAreaElement>(null)
+  // on touch devices focusing would pop the keyboard up unasked
+  const finePointer = useMediaQuery('(pointer: fine)')
 
   useEffect(() => {
     let live = true
@@ -193,8 +208,9 @@ function ChatView({
   useEffect(() => () => abortRef.current?.abort(), [])
 
   // the composer is disabled while streaming; focus it once it is enabled again
+  // biome-ignore lint/correctness/useExhaustiveDependencies: only react to streaming ending
   useEffect(() => {
-    if (!streaming) inputRef.current?.focus()
+    if (!streaming && finePointer) inputRef.current?.focus()
   }, [streaming])
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: resize the composer as the draft changes
@@ -286,18 +302,23 @@ function ChatView({
 
   return (
     <>
-      <header className="flex h-14 shrink-0 items-center gap-3 border-b bg-surface px-5">
+      <header className="flex h-14 shrink-0 items-center gap-2 border-b bg-surface px-4 sm:gap-3 lg:px-5">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <a
               href={href.chat()}
-              className="flex items-center gap-1 rounded font-mono text-md font-semibold hover:text-accent-text"
+              className="flex min-w-0 items-center gap-1 rounded font-mono text-md font-semibold hover:text-accent-text"
               title="Switch agent"
             >
-              {name}
-              <ChevronDown className="size-3.5 text-faint" />
+              <span className="truncate">{name}</span>
+              <ChevronDown className="size-3.5 shrink-0 text-faint" />
             </a>
-            <a href={href.editor(name)} className="text-faint hover:text-fg" title="Edit agent">
+            <a
+              href={href.editor(name)}
+              className="shrink-0 text-faint hover:text-fg max-lg:-m-2 max-lg:p-2"
+              title="Edit agent"
+              aria-label="Edit agent"
+            >
               <Pencil className="size-3.5" />
             </a>
           </div>
@@ -305,16 +326,39 @@ function ChatView({
             {title || (sessionId ? 'Untitled session' : 'New session')}
           </p>
         </div>
-        <Switch
-          checked={autoApprove}
-          onChange={toggleAuto}
-          label="Auto-approve tools"
-          description={autoApprove ? 'Tool calls run without asking' : undefined}
-        />
+        <div className="max-sm:hidden">
+          <Switch
+            checked={autoApprove}
+            onChange={toggleAuto}
+            label="Auto-approve tools"
+            description={autoApprove ? 'Tool calls run without asking' : undefined}
+          />
+        </div>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={autoApprove}
+          aria-label="Auto-approve tools"
+          title={
+            autoApprove ? 'Auto-approve on: tool calls run without asking' : 'Auto-approve off'
+          }
+          onClick={() => toggleAuto(!autoApprove)}
+          className={cn(
+            'flex h-9 shrink-0 items-center gap-1 rounded-full border px-2.5 text-xs font-medium transition-colors sm:hidden [&_svg]:size-4',
+            autoApprove
+              ? 'border-transparent bg-warning-soft text-warning'
+              : 'border-line-strong text-muted',
+          )}
+        >
+          {autoApprove ? <ShieldCheck /> : <ShieldQuestion />}
+          Auto
+        </button>
         <Button
           icon={<MessageSquarePlus />}
           onClick={onNewSession}
           disabled={streaming && !sessionId}
+          collapse="sm"
+          title="New session"
         >
           New session
         </Button>
@@ -328,7 +372,7 @@ function ChatView({
         }}
         className="min-h-0 flex-1 overflow-y-auto"
       >
-        <div className="mx-auto max-w-3xl px-6 py-6">
+        <div className="mx-auto max-w-3xl px-4 py-5 sm:px-6 sm:py-6">
           {loadingHistory && <Spinner label="Loading session…" />}
           {empty && (
             <div className="flex flex-col items-center py-16 text-center">
@@ -349,9 +393,9 @@ function ChatView({
       </div>
 
       <div className="shrink-0 border-t bg-surface">
-        <div className="mx-auto max-w-3xl px-6 pt-3 pb-2">
+        <div className="mx-auto max-w-3xl px-3 pt-2 pb-2 sm:px-6 sm:pt-3">
           {commands.length > 0 && (
-            <div className="mb-2 flex flex-wrap gap-1.5">
+            <div className="no-scrollbar -mx-3 mb-2 flex gap-1.5 overflow-x-auto px-3 sm:mx-0 sm:flex-wrap sm:px-0">
               {commands.map((c) => (
                 <button
                   key={c.name}
@@ -361,7 +405,7 @@ function ChatView({
                     setDraft(c.prompt || c.name)
                     inputRef.current?.focus()
                   }}
-                  className="h-6 rounded-full border bg-sunken px-2.5 font-mono text-xs text-muted hover:border-line-strong hover:text-fg"
+                  className="h-6 shrink-0 rounded-full border bg-sunken px-2.5 font-mono text-xs whitespace-nowrap text-muted hover:border-line-strong hover:text-fg max-lg:h-8 max-lg:px-3"
                 >
                   /{c.name}
                 </button>
@@ -371,9 +415,8 @@ function ChatView({
           <div className="control flex items-end gap-2 p-1.5 pl-3">
             <textarea
               ref={inputRef}
-              // biome-ignore lint/a11y/noAutofocus: primary input of this view
-              autoFocus
               rows={1}
+              enterKeyHint="send"
               value={draft}
               disabled={streaming || loadingHistory}
               onChange={(e) => setDraft(e.target.value)}
@@ -391,7 +434,7 @@ function ChatView({
                     : `Message ${name}`
               }
               aria-label="Message"
-              className="max-h-[220px] min-h-7 flex-1 resize-none bg-transparent py-1 text-md outline-none placeholder:text-faint disabled:opacity-60"
+              className="max-h-[220px] min-h-7 flex-1 resize-none bg-transparent py-1 text-md outline-none placeholder:text-faint disabled:opacity-60 max-lg:max-h-[30dvh] max-lg:py-1.5"
             />
             {streaming ? (
               <Button
@@ -412,8 +455,8 @@ function ChatView({
               />
             )}
           </div>
-          <div className="flex items-center justify-between px-1 pt-1.5 text-2xs text-faint">
-            <span>Enter to send · Shift+Enter for a new line</span>
+          <div className="flex items-center justify-between gap-3 px-1 pt-1.5 text-2xs text-faint">
+            <span className="max-lg:hidden">Enter to send · Shift+Enter for a new line</span>
             <UsageLine usage={usage} />
           </div>
         </div>
@@ -427,7 +470,7 @@ function UsageLine({ usage }: { usage: Usage | null }) {
   const ctx =
     usage.context_length && usage.context_limit ? usage.context_length / usage.context_limit : null
   return (
-    <span className="flex items-center gap-2.5 font-mono tabular-nums">
+    <span className="flex min-w-0 items-center gap-2.5 font-mono tabular-nums max-lg:ml-auto">
       <span title="Input tokens">in {formatTokens(usage.input_tokens)}</span>
       <span title="Output tokens">out {formatTokens(usage.output_tokens)}</span>
       {ctx !== null && (

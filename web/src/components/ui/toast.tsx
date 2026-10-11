@@ -48,7 +48,7 @@ export function Toaster() {
   const list = useSyncExternalStore(subscribe, () => toasts)
   return (
     <div
-      className="pointer-events-none fixed right-4 bottom-4 z-50 flex w-[360px] flex-col gap-2"
+      className="pointer-events-none fixed inset-x-4 bottom-[calc(4.25rem+env(safe-area-inset-bottom))] z-50 flex flex-col gap-2 sm:left-auto sm:w-[360px] lg:bottom-4"
       aria-live="polite"
     >
       {list.map((t) => {
@@ -64,7 +64,7 @@ export function Toaster() {
             <button
               type="button"
               onClick={() => dismiss(t.id)}
-              className="-mr-1 rounded p-0.5 text-faint hover:text-fg"
+              className="-mr-1 rounded p-0.5 text-faint hover:text-fg max-lg:-my-1.5 max-lg:p-1.5"
               aria-label="Dismiss"
             >
               <X className="size-3.5" />
