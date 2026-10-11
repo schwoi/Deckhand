@@ -47,7 +47,7 @@ export function Dialog({
       className={cn(
         'overflow-hidden border border-line-strong bg-surface p-0 text-fg shadow-2xl shadow-black/20 open:flex open:flex-col',
         // phone: bottom sheet
-        'mx-0 mt-auto mb-0 max-h-[90dvh] w-full max-w-none rounded-t-2xl border-b-0 pb-[env(safe-area-inset-bottom)] max-sm:open:animate-sheet-in',
+        'mx-0 mt-auto mb-0 max-h-[90dvh] w-full max-w-none rounded-t-2xl border-b-0 pb-[env(safe-area-inset-bottom)] max-sm:pr-[env(safe-area-inset-right)] max-sm:pl-[env(safe-area-inset-left)] max-sm:open:animate-sheet-in',
         // tablet and up: centered card
         'sm:m-auto sm:max-h-[85dvh] sm:w-[calc(100vw-2rem)] sm:rounded-xl sm:border-b sm:pb-0 sm:open:animate-pop-in',
         { sm: 'sm:max-w-sm', md: 'sm:max-w-lg', lg: 'sm:max-w-2xl' }[width],

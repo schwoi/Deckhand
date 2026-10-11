@@ -28,7 +28,7 @@ function Shell() {
   return (
     <div className="flex h-dvh min-h-0 flex-col pt-[env(safe-area-inset-top)] lg:flex-row">
       <Sidebar section={section} />
-      <main className="flex min-h-0 min-w-0 flex-1 flex-col">
+      <main className="flex min-h-0 min-w-0 flex-1 flex-col max-lg:pr-[env(safe-area-inset-right)] max-lg:pl-[env(safe-area-inset-left)]">
         <Page route={route} />
       </main>
       <TabBar section={section} />
@@ -74,15 +74,18 @@ function TabBar({ section }: { section: Section }) {
             >
               {n.icon}
               {n.id === 'system' && (
-                <span
-                  title={
-                    offline ? 'Runtime unreachable' : `Runtime ${stateLabel[state].toLowerCase()}`
-                  }
-                  className={cn(
-                    'absolute top-0.5 right-3 size-2 rounded-full ring-2 ring-surface',
-                    offline ? 'bg-danger' : stateDot[state],
-                  )}
-                />
+                <>
+                  <span
+                    aria-hidden="true"
+                    className={cn(
+                      'absolute top-0.5 right-3 size-2 rounded-full ring-2 ring-surface',
+                      offline ? 'bg-danger' : stateDot[state],
+                    )}
+                  />
+                  <span className="sr-only">
+                    {offline ? 'Runtime unreachable' : `Runtime ${stateLabel[state].toLowerCase()}`}
+                  </span>
+                </>
               )}
             </span>
             {n.label}

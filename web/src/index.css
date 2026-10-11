@@ -219,7 +219,7 @@
 /*
  * Unlayered so it beats the text-* utilities: iOS zooms into any focused field under 16px.
  */
-@media (max-width: 639px) {
+@media (pointer: coarse) and (max-width: 1023px) {
   input:not([type="checkbox"], [type="radio"], [type="range"]),
   textarea,
   select {

@@ -91,7 +91,7 @@ export function Menu({
               role="menuitem"
               disabled={item.disabled}
               onClick={() => {
-                setOpen(false)
+                close()
                 item.onSelect()
               }}
               className={cn(

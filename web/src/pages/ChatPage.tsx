@@ -92,7 +92,9 @@ function AgentPicker({ session }: { session?: string }) {
                 <Bot className="size-4" />
               </div>
               <div className="min-w-0 flex-1">
-                <div className="font-mono text-base font-medium">{a.name}</div>
+                <div className="truncate font-mono text-base font-medium" title={a.name}>
+                  {a.name}
+                </div>
                 <div className="truncate text-sm text-muted">{a.description || a.rootModel}</div>
               </div>
               <span className="shrink-0 font-mono text-xs text-faint max-sm:hidden">
