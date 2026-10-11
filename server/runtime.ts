@@ -3,7 +3,7 @@ import { join } from 'node:path'
 import type { RuntimeState, RuntimeStatus } from '@shared/api'
 import type { Subprocess } from 'bun'
 import { CLI_CMD, CLI_ENV } from './cli'
-import { AGENTS_DIR, RUNTIME_LISTEN, SESSION_DB, STUDIO_HOME } from './paths'
+import { AGENTS_DIR, DECKHAND_HOME, RUNTIME_LISTEN, SESSION_DB } from './paths'
 
 const LOG_LINES = 200
 const PING_TIMEOUT_MS = 15_000
@@ -86,11 +86,11 @@ class Runtime {
     clearTimeout(this.debounce)
     this.debounce = setTimeout(() => {
       if (this.state === 'running' || this.state === 'starting') {
-        this.log('[studio] agents changed, restarting runtime')
+        this.log('[deckhand] agents changed, restarting runtime')
         this.restart().catch((e: unknown) => {
           this.state = 'error'
           this.error = `restart failed: ${e instanceof Error ? e.message : String(e)}`
-          this.log(`[studio] ${this.error}`)
+          this.log(`[deckhand] ${this.error}`)
         })
       }
     }, 500)
@@ -152,14 +152,14 @@ class Runtime {
     if (await this.ping()) {
       this.state = 'error'
       this.error = `something else is already listening on ${RUNTIME_LISTEN}`
-      this.log(`[studio] ${this.error}`)
+      this.log(`[deckhand] ${this.error}`)
       return this.status()
     }
-    this.log(`[studio] $ ${args.join(' ')}`)
+    this.log(`[deckhand] $ ${args.join(' ')}`)
     let child: Child
     try {
       child = Bun.spawn(args, {
-        cwd: STUDIO_HOME,
+        cwd: DECKHAND_HOME,
         env: CLI_ENV,
         stdin: 'ignore',
         stdout: 'pipe',
@@ -168,7 +168,7 @@ class Runtime {
     } catch (e) {
       this.state = 'error'
       this.error = e instanceof Error ? e.message : String(e)
-      this.log(`[studio] spawn failed: ${this.error}`)
+      this.log(`[deckhand] spawn failed: ${this.error}`)
       return this.status()
     }
     this.child = child
@@ -180,7 +180,7 @@ class Runtime {
       if (this.child !== child) return
       this.child = undefined
       this.startedAt = undefined
-      this.log(`[studio] runtime exited with code ${code}`)
+      this.log(`[deckhand] runtime exited with code ${code}`)
       if (this.stopRequested) {
         this.state = 'stopped'
       } else {
@@ -212,7 +212,7 @@ class Runtime {
 // A dev-server reload or a crash can leave a previous child running and holding the port.
 // Record the child's pid and, on boot, terminate a leftover that is still a `serve api`.
 
-const PID_FILE = join(STUDIO_HOME, 'runtime.pid')
+const PID_FILE = join(DECKHAND_HOME, 'runtime.pid')
 
 function writePidFile(pid: number): void {
   try {
@@ -250,7 +250,7 @@ function reapStaleRuntime(): void {
     return
   }
   if (!isServeApi(pid)) return
-  console.warn(`[studio] terminating stale runtime pid ${pid} left by a previous run`)
+  console.warn(`[deckhand] terminating stale runtime pid ${pid} left by a previous run`)
   try {
     process.kill(pid, 'SIGTERM')
   } catch {}

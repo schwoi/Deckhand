@@ -160,7 +160,7 @@ function RuntimeCard() {
       <CardHeader
         icon={<Boxes />}
         title="Runtime"
-        description="docker agent serve api, managed by Studio."
+        description="docker agent serve api, managed by Deckhand."
         actions={
           !active ? (
             <Button
@@ -191,7 +191,7 @@ function RuntimeCard() {
         }
       />
       {offline ? (
-        <ErrorLine error="The Studio server is unreachable." />
+        <ErrorLine error="The Deckhand server is unreachable." />
       ) : !status ? (
         <LoadingRows />
       ) : (

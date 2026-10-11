@@ -123,9 +123,9 @@ export function EditorPage({ name }: { name: string }) {
   }, [yamlText, detail])
 
   useEffect(() => {
-    document.title = `${dirty ? '● ' : ''}${name} · Docker Agent Studio`
+    document.title = `${dirty ? '● ' : ''}${name} · Deckhand`
     return () => {
-      document.title = 'Docker Agent Studio'
+      document.title = 'Deckhand'
     }
   }, [dirty, name])
 

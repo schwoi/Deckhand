@@ -1,7 +1,8 @@
 {
-  "name": "docker-agent-studio",
+  "name": "deckhand",
   "version": "0.1.0",
   "private": true,
+  "license": "AGPL-3.0-only",
   "type": "module",
   "scripts": {
     "dev": "concurrently -n server,web -c blue,magenta \"bun run dev:server\" \"bun run dev:web\"",

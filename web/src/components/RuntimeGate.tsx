@@ -21,14 +21,14 @@ export function RuntimeGate({ children, purpose }: { children: ReactNode; purpos
           <div className="min-w-0 flex-1">
             <h2 className="text-md font-semibold">
               {offline
-                ? 'Studio server unreachable'
+                ? 'Deckhand server unreachable'
                 : starting
                   ? 'Starting the runtime…'
                   : 'The agent runtime is not running'}
             </h2>
             <p className="mt-1 text-base text-muted">
               {offline
-                ? 'Make sure the Studio server is running (bun run dev).'
+                ? 'Make sure the Deckhand server is running (bun run dev).'
                 : `${purpose} needs the managed docker agent serve api process. It serves every agent in ${status?.agentsDir ?? 'the agents directory'}.`}
             </p>
             {status?.state === 'error' && status.error && (

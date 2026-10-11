@@ -123,7 +123,7 @@ function Sidebar({ section }: { section: Section }) {
       <div className="flex h-14 shrink-0 items-center gap-2.5 border-b px-4">
         <Logo />
         <div className="leading-tight">
-          <div className="text-base font-semibold tracking-tight">Agent Studio</div>
+          <div className="text-base font-semibold tracking-tight">Deckhand</div>
           <div className="text-2xs text-faint">for docker agent</div>
         </div>
       </div>
@@ -198,7 +198,7 @@ function RuntimePill() {
             title={status?.error ?? status?.listen}
           >
             {offline
-              ? 'Studio server is down'
+              ? 'Deckhand server is down'
               : state === 'error'
                 ? (status?.error ?? 'failed')
                 : (status?.listen ?? '—')}

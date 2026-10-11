@@ -5,7 +5,7 @@ import { toast } from './components/ui/toast'
 
 interface RuntimeCtx {
   status: RuntimeStatus | null
-  /** true when the Studio server itself cannot be reached */
+  /** true when the Deckhand server itself cannot be reached */
   offline: boolean
   refresh: () => Promise<void>
   control: (action: 'start' | 'stop' | 'restart') => Promise<void>

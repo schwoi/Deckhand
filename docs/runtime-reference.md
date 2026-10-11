@@ -3,7 +3,7 @@
 The `docker agent` CLI plugin is installed at `~/.docker/cli-plugins/docker-agent`.
 Always set env `DOCKER_AGENT_HIDE_TELEMETRY_BANNER=1` when spawning it.
 
-## CLI commands used by Studio
+## CLI commands used by Deckhand
 
 | Command | Notes |
 | --- | --- |

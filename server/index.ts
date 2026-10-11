@@ -188,7 +188,7 @@ app.post('/api/registry/pull', async (c) => {
     throw new HttpError(400, `cannot derive a valid agent name from "${ref}"; pass "name"`)
   if (!force && agentPath(name))
     throw new HttpError(409, `agent already exists: ${name} (pass force to overwrite)`)
-  const dir = await mkdtemp(join(tmpdir(), 'das-pull-'))
+  const dir = await mkdtemp(join(tmpdir(), 'deckhand-pull-'))
   try {
     const result = await runCli(['share', 'pull', ref, ...(force ? ['--force'] : [])], {
       cwd: dir,
@@ -276,7 +276,7 @@ if (process.env.NODE_ENV === 'production') {
 const port = Number(process.env.PORT) || 4800
 // Loopback only: the API is unauthenticated and can read/write agent files and drive the runtime.
 const hostname = process.env.HOST || '127.0.0.1'
-console.log(`Docker Agent Studio API on http://${hostname}:${port} (agents: ${AGENTS_DIR})`)
+console.log(`Deckhand API on http://${hostname}:${port} (agents: ${AGENTS_DIR})`)
 
 // idleTimeout 0: proxied SSE streams can be idle for long stretches while the model thinks.
 export default { port, hostname, fetch: app.fetch, idleTimeout: 0 }

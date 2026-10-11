@@ -51,7 +51,7 @@ async function request<T>(
     })
   } catch (e) {
     if (e instanceof DOMException && e.name === 'AbortError') throw e
-    throw new ApiError(0, 'Cannot reach the Studio server')
+    throw new ApiError(0, 'Cannot reach the Deckhand server')
   }
   const text = await res.text()
   let data: unknown
