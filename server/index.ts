@@ -1,7 +1,7 @@
 import { readdirSync } from 'node:fs'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
-import { extname, join, normalize } from 'node:path'
+import { extname, join, normalize, sep } from 'node:path'
 import type {
   CliVersion,
   CommandResult,
@@ -266,7 +266,7 @@ if (process.env.NODE_ENV === 'production') {
   app.get('*', async (c) => {
     const path = normalize(join(dist, decodeURIComponent(c.req.path)))
     const file = Bun.file(path)
-    if (path.startsWith(dist) && path !== dist && (await file.exists())) return new Response(file)
+    if (path.startsWith(dist + sep) && (await file.exists())) return new Response(file)
     return new Response(Bun.file(join(dist, 'index.html')), {
       headers: { 'content-type': 'text/html; charset=utf-8' },
     })
@@ -274,7 +274,9 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 const port = Number(process.env.PORT) || 4800
-console.log(`Docker Agent Studio API on http://localhost:${port} (agents: ${AGENTS_DIR})`)
+// Loopback only: the API is unauthenticated and can read/write agent files and drive the runtime.
+const hostname = process.env.HOST || '127.0.0.1'
+console.log(`Docker Agent Studio API on http://${hostname}:${port} (agents: ${AGENTS_DIR})`)
 
 // idleTimeout 0: proxied SSE streams can be idle for long stretches while the model thinks.
-export default { port, fetch: app.fetch, idleTimeout: 0 }
+export default { port, hostname, fetch: app.fetch, idleTimeout: 0 }

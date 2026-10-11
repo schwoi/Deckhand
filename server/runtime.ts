@@ -1,6 +1,8 @@
+import { existsSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
 import type { RuntimeState, RuntimeStatus } from '@shared/api'
 import type { Subprocess } from 'bun'
-import { CLI_ENV } from './cli'
+import { CLI_CMD, CLI_ENV } from './cli'
 import { AGENTS_DIR, RUNTIME_LISTEN, SESSION_DB, STUDIO_HOME } from './paths'
 
 const LOG_LINES = 200
@@ -52,10 +54,10 @@ class Runtime {
 
   async stop(): Promise<RuntimeStatus> {
     clearTimeout(this.debounce)
-    await this.pending?.catch(() => undefined)
+    // Mark intent first so a startup in progress is cancelled instead of awaited.
+    this.stopRequested = true
     const child = this.child
     if (child) {
-      this.stopRequested = true
       child.kill('SIGTERM')
       const exited = await Promise.race([
         child.exited.then(() => true),
@@ -67,6 +69,7 @@ class Runtime {
       }
       if (this.child === child) this.child = undefined
     }
+    await this.pending?.catch(() => undefined)
     this.state = 'stopped'
     this.startedAt = undefined
     this.error = undefined
@@ -84,15 +87,28 @@ class Runtime {
     this.debounce = setTimeout(() => {
       if (this.state === 'running' || this.state === 'starting') {
         this.log('[studio] agents changed, restarting runtime')
-        void this.restart()
+        this.restart().catch((e: unknown) => {
+          this.state = 'error'
+          this.error = `restart failed: ${e instanceof Error ? e.message : String(e)}`
+          this.log(`[studio] ${this.error}`)
+        })
       }
     }, 500)
   }
 
-  /** Synchronous best-effort kill for process shutdown. */
+  /** Best-effort kill for process shutdown (sync; used by the 'exit' hook). */
   kill(): void {
     this.stopRequested = true
-    this.child?.kill('SIGTERM')
+    this.child?.kill('SIGKILL')
+  }
+
+  private async ping(): Promise<boolean> {
+    try {
+      const res = await fetch(`${this.url}/api/ping`, { signal: AbortSignal.timeout(1000) })
+      return res.ok
+    } catch {
+      return false
+    }
   }
 
   private log(line: string): void {
@@ -124,8 +140,7 @@ class Runtime {
     this.stopRequested = false
     this.lastStderr = ''
     const args = [
-      'docker',
-      'agent',
+      ...CLI_CMD,
       'serve',
       'api',
       AGENTS_DIR,
@@ -134,6 +149,12 @@ class Runtime {
       '--session-db',
       SESSION_DB,
     ]
+    if (await this.ping()) {
+      this.state = 'error'
+      this.error = `something else is already listening on ${RUNTIME_LISTEN}`
+      this.log(`[studio] ${this.error}`)
+      return this.status()
+    }
     this.log(`[studio] $ ${args.join(' ')}`)
     let child: Child
     try {
@@ -151,9 +172,11 @@ class Runtime {
       return this.status()
     }
     this.child = child
+    writePidFile(child.pid)
     const output = Promise.all([this.pump(child.stdout, false), this.pump(child.stderr, true)])
     void child.exited.then(async (code) => {
       await output.catch(() => undefined)
+      clearPidFile(child.pid)
       if (this.child !== child) return
       this.child = undefined
       this.startedAt = undefined
@@ -168,16 +191,11 @@ class Runtime {
 
     const deadline = Date.now() + PING_TIMEOUT_MS
     while (Date.now() < deadline) {
-      if (this.child !== child) return this.status() // exited during startup
-      try {
-        const res = await fetch(`${this.url}/api/ping`, { signal: AbortSignal.timeout(1000) })
-        if (res.ok && this.child === child) {
-          this.state = 'running'
-          this.startedAt = new Date().toISOString()
-          return this.status()
-        }
-      } catch {
-        // not listening yet
+      if (this.child !== child || this.stopRequested) return this.status() // exited or cancelled
+      if ((await this.ping()) && this.child === child) {
+        this.state = 'running'
+        this.startedAt = new Date().toISOString()
+        return this.status()
       }
       await sleep(250)
     }
@@ -190,12 +208,66 @@ class Runtime {
   }
 }
 
+// --- stale runtime cleanup -------------------------------------------------
+// A dev-server reload or a crash can leave a previous child running and holding the port.
+// Record the child's pid and, on boot, terminate a leftover that is still a `serve api`.
+
+const PID_FILE = join(STUDIO_HOME, 'runtime.pid')
+
+function writePidFile(pid: number): void {
+  try {
+    writeFileSync(PID_FILE, String(pid))
+  } catch {}
+}
+
+function clearPidFile(pid: number): void {
+  try {
+    if (existsSync(PID_FILE) && readFileSync(PID_FILE, 'utf8').trim() === String(pid))
+      unlinkSync(PID_FILE)
+  } catch {}
+}
+
+function isServeApi(pid: number): boolean {
+  try {
+    // Linux: confirm the pid was not recycled by an unrelated process.
+    const cmdline = readFileSync(`/proc/${pid}/cmdline`, 'utf8').replaceAll('\0', ' ')
+    return cmdline.includes('serve api')
+  } catch {
+    return process.platform !== 'linux' // no /proc: trust the pid file
+  }
+}
+
+function reapStaleRuntime(): void {
+  if (!existsSync(PID_FILE)) return
+  const pid = Number(readFileSync(PID_FILE, 'utf8').trim())
+  try {
+    unlinkSync(PID_FILE)
+  } catch {}
+  if (!Number.isInteger(pid) || pid <= 1) return
+  try {
+    process.kill(pid, 0) // throws if not alive
+  } catch {
+    return
+  }
+  if (!isServeApi(pid)) return
+  console.warn(`[studio] terminating stale runtime pid ${pid} left by a previous run`)
+  try {
+    process.kill(pid, 'SIGTERM')
+  } catch {}
+}
+
+reapStaleRuntime()
+
 export const runtime = new Runtime()
 
 process.on('exit', () => runtime.kill())
+let shuttingDown = false
 for (const sig of ['SIGINT', 'SIGTERM'] as const) {
   process.on(sig, () => {
-    runtime.kill()
-    process.exit(0)
+    if (shuttingDown) return
+    shuttingDown = true
+    // Graceful stop (SIGTERM, then SIGKILL after STOP_GRACE_MS) with a hard exit fallback.
+    setTimeout(() => process.exit(1), STOP_GRACE_MS + 1000).unref()
+    runtime.stop().finally(() => process.exit(0))
   })
 }

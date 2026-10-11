@@ -213,7 +213,7 @@ function ChatView({
 
   const send = async (text: string) => {
     const content = text.trim()
-    if (!content || streaming) return
+    if (!content || streaming || loadingHistory) return
     setDraft('')
     setItems((prev) => [...prev, { kind: 'user', id: newId(), content }])
     setStreaming(true)
@@ -375,7 +375,7 @@ function ChatView({
               autoFocus
               rows={1}
               value={draft}
-              disabled={streaming}
+              disabled={streaming || loadingHistory}
               onChange={(e) => setDraft(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
@@ -383,7 +383,13 @@ function ChatView({
                   send(draft)
                 }
               }}
-              placeholder={streaming ? 'Waiting for the agent…' : `Message ${name}`}
+              placeholder={
+                streaming
+                  ? 'Waiting for the agent…'
+                  : loadingHistory
+                    ? 'Loading session…'
+                    : `Message ${name}`
+              }
               aria-label="Message"
               className="max-h-[220px] min-h-7 flex-1 resize-none bg-transparent py-1 text-md outline-none placeholder:text-faint disabled:opacity-60"
             />

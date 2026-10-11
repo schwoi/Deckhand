@@ -1,6 +1,30 @@
+import { existsSync } from 'node:fs'
+import { homedir } from 'node:os'
+import { join } from 'node:path'
 import type { CommandResult } from '@shared/api'
 
 export const CLI_ENV = { ...process.env, DOCKER_AGENT_HIDE_TELEMETRY_BANNER: '1' }
+
+const PLUGIN_CANDIDATES = [
+  process.env.DOCKER_AGENT_BIN,
+  join(homedir(), '.docker/cli-plugins/docker-agent'),
+  '/usr/local/lib/docker/cli-plugins/docker-agent',
+  '/usr/lib/docker/cli-plugins/docker-agent',
+  '/usr/libexec/docker/cli-plugins/docker-agent',
+  '/Applications/Docker.app/Contents/Resources/cli-plugins/docker-agent',
+  Bun.which('docker-agent'),
+].filter((p): p is string => !!p)
+
+/**
+ * Command prefix for the docker-agent CLI. The plugin binary is preferred over `docker agent`:
+ * the docker CLI wrapper runs the plugin as a grandchild and ignores an early SIGTERM, which
+ * leaves the real server orphaned when the wrapper is killed. Run standalone, the plugin takes
+ * the same subcommands minus the leading `agent`.
+ */
+export const CLI_CMD: string[] = (() => {
+  const bin = PLUGIN_CANDIDATES.find((p) => existsSync(p))
+  return bin ? [bin] : ['docker', 'agent']
+})()
 
 export interface RunOptions {
   timeoutMs?: number
@@ -13,7 +37,7 @@ export async function runCli(
   { timeoutMs = 30_000, cwd }: RunOptions = {},
 ): Promise<CommandResult> {
   try {
-    const proc = Bun.spawn(['docker', 'agent', ...args], {
+    const proc = Bun.spawn([...CLI_CMD, ...args], {
       cwd,
       env: CLI_ENV,
       stdout: 'pipe',

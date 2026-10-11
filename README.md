@@ -40,11 +40,22 @@ bun run start        # serves dist/ and the API on :4800
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `PORT` | `4800` | Studio API/static server port |
+| `HOST` | `127.0.0.1` | Bind address. The API is unauthenticated and can edit files and drive the runtime, so keep it on loopback unless you put auth in front of it |
+| `DOCKER_AGENT_BIN` | auto-detected | Path to the `docker-agent` plugin binary. Studio looks in the usual cli-plugins directories and falls back to `docker agent` |
 | `DOCKER_AGENT_STUDIO_HOME` | `~/.docker-agent-studio` | Data directory (session db, agents) |
 | `DOCKER_AGENT_STUDIO_AGENTS` | `$HOME_DIR/agents` | Directory holding agent YAML files; seeded with templates on first run |
 | `DOCKER_AGENT_STUDIO_RUNTIME` | `127.0.0.1:4801` | Listen address for the managed `docker agent serve api` process |
 
 Model API keys are read from the environment of the Studio server process (the same environment `docker agent` would use).
+
+### How the runtime is managed
+
+Studio runs one `docker-agent serve api <agents dir>` child process and proxies its HTTP API, including the
+SSE chat streams, under `/api/runtime/proxy/`. The plugin binary is invoked directly rather than through the
+`docker` CLI wrapper, because the wrapper ignores an early SIGTERM and would leave the real server orphaned.
+Saving, creating or deleting an agent restarts the runtime (it reads the directory at start), which cuts any
+in-flight chat stream. Sessions live in SQLite, so the conversation can be continued afterwards. Studio records
+the child's pid and terminates a leftover runtime from a previous run on boot.
 
 ## Layout
 
