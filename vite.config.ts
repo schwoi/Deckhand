@@ -12,6 +12,8 @@ export default defineConfig({
   build: { outDir: '../dist', emptyOutDir: true },
   server: {
     port: 5180,
-    proxy: { '/api': { target: 'http://127.0.0.1:4800', changeOrigin: true } },
+    proxy: {
+      '/api': { target: process.env.DECKHAND_API || 'http://127.0.0.1:4800', changeOrigin: true },
+    },
   },
 })
