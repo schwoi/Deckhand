@@ -23,7 +23,13 @@ export function tighten(path: string, mode: number): void {
   } catch {}
 }
 
+/** Tighten a directory we created and the files directly inside it. A symlinked root is left
+ *  alone entirely: it points somewhere the user manages, so neither it nor its contents are ours. */
 function tightenDir(dir: string): void {
+  if (lstatSync(dir).isSymbolicLink()) {
+    console.warn(`[deckhand] ${dir} is a symlink; leaving its permissions as they are`)
+    return
+  }
   tighten(dir, PRIVATE_DIR)
   for (const name of readdirSync(dir)) {
     const p = join(dir, name)

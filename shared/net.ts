@@ -10,7 +10,15 @@ export function isLoopback(host: string): boolean {
   const bracketed = /^\[([^\]]+)\](?::\d+)?$/.exec(h)
   if (bracketed?.[1]) h = bracketed[1]
   else if (/^[^:]+:\d+$/.test(h)) h = h.replace(/:\d+$/, '')
-  if (h.startsWith('::ffff:')) h = h.slice('::ffff:'.length)
+  if (h.startsWith('::ffff:')) {
+    // IPv4-mapped. URL parsing canonicalises ::ffff:127.0.0.1 to ::ffff:7f00:1, so accept both.
+    h = h.slice('::ffff:'.length)
+    const hex = /^([0-9a-f]{1,4}):([0-9a-f]{1,4})$/.exec(h)
+    if (hex?.[1] && hex[2]) {
+      const [hi, lo] = [Number.parseInt(hex[1], 16), Number.parseInt(hex[2], 16)]
+      h = `${hi >> 8}.${hi & 255}.${lo >> 8}.${lo & 255}`
+    }
+  }
   if (h === 'localhost' || h === '::1') return true
   const m = IPV4.exec(h)
   if (!m) return false

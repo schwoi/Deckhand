@@ -87,8 +87,8 @@ provider credentials the server has. Whoever holds the token is an administrator
 Without a token the server only accepts loopback binds, rejects requests whose `Host` header is not
 `localhost` or a loopback IP literal (DNS rebinding), rejects mutations from other origins (cross-site
 requests), and only reads `application/json` bodies. The data directory, its files and the default agents
-directory are kept `0700`/`0600`, including on upgrade; an agents directory you point `DECKHAND_AGENTS` at
-is left as you set it. The managed runtime's own port has no auth, so leave `DECKHAND_RUNTIME` on
+directory are kept `0700`/`0600`, including on upgrade; an agents directory you point `DECKHAND_AGENTS` at,
+or a data or agents directory that is a symlink, is left as you set it. The managed runtime's own port has no auth, so leave `DECKHAND_RUNTIME` on
 loopback.
 
 ## Docker

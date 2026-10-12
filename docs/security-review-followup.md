@@ -1,5 +1,7 @@
 # Security review follow-up — 2026-10-12
 
+Later verification: [commit 4a2e78c retest results](security-verification-4a2e78c.md) supersede the finding status below for the tested configuration.
+
 Reviewed commit `af9b8e7052b232b8c2fbf21fbfd927fae6e5bed4`, with a clean working tree at the start. This report supersedes the closure status in `security-review.md`; the earlier report is retained as the original assessment.
 
 **Result: the previous findings are not all closed.** The non-loopback startup guard works for literal network bind addresses, and fresh-file permissions are corrected. There remains one high-severity validation bypass and two medium-severity residual risks.
