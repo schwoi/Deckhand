@@ -108,8 +108,8 @@ export async function saveAgent(name: string, yaml: string): Promise<AgentDetail
   if (!parsed.ok)
     throw new HttpError(400, `invalid YAML: ${parsed.issue.message}`, { issues: [parsed.issue] })
   const file = agentPath(name) ?? join(AGENTS_DIR, `${name}.yaml`)
-  await writeFile(file, yaml, { mode: PRIVATE_FILE }) // mode applies to new files only
-  if (AGENTS_DIR_PRIVATE) tighten(file, PRIVATE_FILE)
+  await writeFile(file, yaml, AGENTS_DIR_PRIVATE ? { mode: PRIVATE_FILE } : undefined)
+  if (AGENTS_DIR_PRIVATE) tighten(file, PRIVATE_FILE) // writeFile's mode is for new files only
   return build(name, file, yaml)
 }
 
