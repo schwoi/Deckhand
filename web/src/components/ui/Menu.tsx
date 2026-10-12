@@ -51,7 +51,7 @@ export function Menu({
       if (!root.current?.contains(e.target as Node)) setOpen(false)
     }
     document.addEventListener('pointerdown', onDown)
-    root.current?.querySelector<HTMLElement>('[role="menuitem"]:not(:disabled)')?.focus()
+    root.current?.querySelector<HTMLElement>('[role^="menuitem"]:not(:disabled)')?.focus()
     return () => document.removeEventListener('pointerdown', onDown)
   }, [open])
 
@@ -74,7 +74,7 @@ export function Menu({
     if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(e.key)) return
     e.preventDefault()
     const els = [
-      ...(root.current?.querySelectorAll<HTMLElement>('[role="menuitem"]:not(:disabled)') ?? []),
+      ...(root.current?.querySelectorAll<HTMLElement>('[role^="menuitem"]:not(:disabled)') ?? []),
     ]
     const at = els.indexOf(document.activeElement as HTMLElement)
     const next =
@@ -116,7 +116,8 @@ export function Menu({
               {item.separator && <hr className="my-1 border-line" />}
               <button
                 type="button"
-                role="menuitem"
+                // pick-one items (active is a boolean) get radio semantics so the check is announced
+                role={item.active === undefined ? 'menuitem' : 'menuitemradio'}
                 aria-checked={item.active}
                 disabled={item.disabled}
                 onClick={() => {

@@ -134,9 +134,10 @@ export async function importAgentFile(src: string, name: string): Promise<AgentD
     await rename(src, dest)
   } catch {
     // cross-device move
-    await writeFile(dest, await readFile(src), { mode: PRIVATE_FILE })
+    await writeFile(dest, await readFile(src))
     await unlink(src)
   }
-  tighten(dest, PRIVATE_FILE) // the pulled file keeps the mode `docker agent` gave it
+  // The pulled file keeps the mode `docker agent` gave it; same policy as saveAgent.
+  if (AGENTS_DIR_PRIVATE) tighten(dest, PRIVATE_FILE)
   return getAgent(name)
 }
