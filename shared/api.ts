@@ -145,11 +145,13 @@ export interface EnvironmentInfo {
   url: string // base URL of the remote Deckhand, e.g. http://build-box:4800
   hasToken: boolean
   insecure: boolean // plain http to another machine: the token is sent unencrypted
+  allowInsecure: boolean // operator accepted that (VPN, tunnel, trusted network)
 }
 export interface EnvironmentInput {
   name: string
   url: string
   token?: string // omitted on update = keep the stored token; '' = clear it
+  allowInsecure?: boolean // required true for an insecure url; omitted on update = keep
 }
 export interface EnvironmentTest {
   ok: boolean

@@ -75,18 +75,20 @@ refuses to start on a non-loopback address without one. The dashboard stores eac
 browser then asks for it once and keeps it in local storage.
 
 Tokens are sent with every proxied request, so a plain `http://` environment on another machine exposes
-its token to anyone on the path. Deckhand marks those *unencrypted*; put HTTPS or a tunnel such as
-Tailscale or SSH in front of anything that crosses a network you do not trust.
+its token to anyone on the path. Deckhand refuses such a URL unless you switch on *Allow an unencrypted
+connection* for that environment, which is meant for a VPN, a tunnel such as Tailscale or SSH, or a
+network you trust. Prefer HTTPS termination in front of any instance that crosses a network you do not.
 
 ### Security model
 
 The API is an administrative interface: it writes agent files, starts processes, and uses whatever
 provider credentials the server has. Whoever holds the token is an administrator.
 
-Without a token the server only accepts loopback binds, rejects requests whose `Host` header is not a
-loopback name (DNS rebinding), rejects mutations from non-loopback origins (cross-site requests), and only
-reads `application/json` bodies. Data directories are created `0700` and agent files `0600`; existing
-directories keep their modes. The managed runtime's own port has no auth, so leave `DECKHAND_RUNTIME` on
+Without a token the server only accepts loopback binds, rejects requests whose `Host` header is not
+`localhost` or a loopback IP literal (DNS rebinding), rejects mutations from other origins (cross-site
+requests), and only reads `application/json` bodies. The data directory, its files and the default agents
+directory are kept `0700`/`0600`, including on upgrade; an agents directory you point `DECKHAND_AGENTS` at
+is left as you set it. The managed runtime's own port has no auth, so leave `DECKHAND_RUNTIME` on
 loopback.
 
 ## Docker

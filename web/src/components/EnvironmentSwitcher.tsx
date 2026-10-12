@@ -1,4 +1,5 @@
 import type { EnvironmentInfo, EnvironmentTest } from '@shared/api'
+import { isInsecureUrl } from '@shared/net'
 import {
   ChevronsUpDown,
   CircleCheck,
@@ -18,7 +19,7 @@ import { cn } from '../lib/util'
 import { Button } from './ui/Button'
 import { Dialog, confirmDialog } from './ui/Dialog'
 import { Menu } from './ui/Menu'
-import { Field, Input } from './ui/form'
+import { Field, Input, Switch } from './ui/form'
 import { Badge, Spinner } from './ui/misc'
 import { toast } from './ui/toast'
 
@@ -65,18 +66,8 @@ export function EnvironmentSwitcher({ className }: { className?: string }) {
   )
 }
 
-type Draft = { id?: string; name: string; url: string; token: string }
-const EMPTY: Draft = { name: '', url: '', token: '' }
-
-/** Mirrors the server's `insecure` flag for a URL still being typed. */
-function isInsecureUrl(raw: string): boolean {
-  try {
-    const u = new URL(raw)
-    return u.protocol === 'http:' && !/^(localhost|127\.|\[::1\])/.test(u.host)
-  } catch {
-    return false
-  }
-}
+type Draft = { id?: string; name: string; url: string; token: string; allowInsecure: boolean }
+const EMPTY: Draft = { name: '', url: '', token: '', allowInsecure: false }
 
 function InsecureBadge() {
   return (
@@ -144,7 +135,15 @@ function ManageEnvironmentsDialog({ open, onClose }: { open: boolean; onClose: (
               key={env.id}
               env={env}
               active={env.id === current.id}
-              onEdit={() => setDraft({ id: env.id, name: env.name, url: env.url, token: '' })}
+              onEdit={() =>
+                setDraft({
+                  id: env.id,
+                  name: env.name,
+                  url: env.url,
+                  token: '',
+                  allowInsecure: env.allowInsecure,
+                })
+              }
               onRemove={() => remove(env)}
             />
           ))}
@@ -222,12 +221,23 @@ function EnvironmentForm({
     setForm((f) => ({ ...f, ...patch }))
     setTest(null)
   }
-  const valid = form.name.trim() !== '' && /^https?:\/\/\S+$/.test(form.url.trim())
+  const insecure = isInsecureUrl(form.url.trim())
+  const valid =
+    form.name.trim() !== '' &&
+    /^https?:\/\/\S+$/.test(form.url.trim()) &&
+    (!insecure || form.allowInsecure)
 
   const runTest = async () => {
     setTesting(true)
     try {
-      setTest(await api.environments.testInput({ id: form.id, url: form.url, token: form.token }))
+      setTest(
+        await api.environments.testInput({
+          id: form.id,
+          url: form.url,
+          token: form.token,
+          allowInsecure: form.allowInsecure,
+        }),
+      )
     } catch (e) {
       setTest({ ok: false, error: errorText(e) })
     } finally {
@@ -240,7 +250,12 @@ function EnvironmentForm({
     if (!valid) return
     setSaving(true)
     try {
-      const input = { name: form.name, url: form.url, token: form.token || undefined }
+      const input = {
+        name: form.name,
+        url: form.url,
+        token: form.token || undefined,
+        allowInsecure: form.allowInsecure,
+      }
       if (form.id) await api.environments.update(form.id, input)
       else await api.environments.create(input)
       toast.success(form.id ? 'Environment updated' : 'Environment added')
@@ -265,7 +280,7 @@ function EnvironmentForm({
       <Field
         label="URL"
         help="Where that Deckhand listens, including the port."
-        aside={isInsecureUrl(form.url) && <InsecureBadge />}
+        aside={insecure && <InsecureBadge />}
       >
         <Input
           mono
@@ -291,6 +306,16 @@ function EnvironmentForm({
           onChange={(e) => set({ token: e.target.value })}
         />
       </Field>
+      {insecure && (
+        <div className="rounded-md bg-warning-soft px-3 py-2.5">
+          <Switch
+            checked={form.allowInsecure}
+            onChange={(v) => set({ allowInsecure: v })}
+            label="Allow an unencrypted connection"
+            description="The token will be sent in the clear. Only for a VPN, a tunnel, or a network you trust."
+          />
+        </div>
+      )}
       <div className="flex flex-wrap items-center gap-2">
         <Button loading={testing} disabled={!valid} onClick={runTest}>
           Test connection

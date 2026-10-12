@@ -1,8 +1,8 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { EnvironmentInfo, EnvironmentInput, EnvironmentTest, RuntimeStatus } from '@shared/api'
+import { isInsecureUrl } from '@shared/net'
 import { HttpError } from './agents'
-import { isLoopback } from './net'
 import { DECKHAND_HOME } from './paths'
 
 /** Registry of remote Deckhand instances, persisted as JSON in the data directory. */
@@ -12,6 +12,22 @@ interface Environment {
   name: string
   url: string
   token?: string
+  allowInsecure?: boolean
+}
+
+type Transport = Pick<Environment, 'url' | 'token' | 'allowInsecure'>
+
+/**
+ * Plain http to another machine leaks the token to anyone on the path, so it needs an explicit
+ * per-environment opt-in (for a VPN, a tunnel, or a network the operator trusts). Checked on
+ * save, on test and on every proxied request, so stored environments are covered too.
+ */
+export function assertTransport(env: Transport): void {
+  if (isInsecureUrl(env.url) && !env.allowInsecure)
+    throw new HttpError(
+      400,
+      `${env.url} is plain http to another machine; use https or allow an unencrypted connection`,
+    )
 }
 
 const FILE = join(DECKHAND_HOME, 'environments.json')
@@ -32,11 +48,11 @@ function persist(): void {
   writeFileSync(FILE, `${JSON.stringify(envs, null, 2)}\n`, { mode: 0o600 })
 }
 
-const toInfo = ({ token, ...e }: Environment): EnvironmentInfo => ({
+const toInfo = ({ token, allowInsecure, ...e }: Environment): EnvironmentInfo => ({
   ...e,
   hasToken: !!token,
-  // The bearer token travels in the clear unless the remote is https or on this machine.
-  insecure: e.url.startsWith('http:') && !isLoopback(new URL(e.url).host),
+  insecure: isInsecureUrl(e.url),
+  allowInsecure: !!allowInsecure,
 })
 
 export function listEnvironments(): EnvironmentInfo[] {
@@ -69,7 +85,9 @@ export function addEnvironment(input: EnvironmentInput): EnvironmentInfo {
     name,
     url: normalizeUrl(input.url),
     token: input.token || undefined,
+    allowInsecure: input.allowInsecure || undefined,
   }
+  assertTransport(env)
   envs = [...envs, env]
   persist()
   return toInfo(env)
@@ -82,7 +100,10 @@ export function updateEnvironment(id: string, input: Partial<EnvironmentInput>):
     name: input.name === undefined ? prev.name : input.name.trim() || prev.name,
     url: input.url === undefined ? prev.url : normalizeUrl(input.url),
     token: input.token === undefined ? prev.token : input.token || undefined,
+    allowInsecure:
+      (input.allowInsecure === undefined ? prev.allowInsecure : input.allowInsecure) || undefined,
   }
+  assertTransport(next)
   envs = envs.map((e) => (e.id === id ? next : e))
   persist()
   return toInfo(next)
@@ -99,9 +120,8 @@ export function authHeaders(env: Pick<Environment, 'token'>): Record<string, str
 }
 
 /** Reach the remote and report its CLI version and runtime state. */
-export async function testEnvironment(
-  env: Pick<Environment, 'url' | 'token'>,
-): Promise<EnvironmentTest> {
+export async function testEnvironment(env: Transport): Promise<EnvironmentTest> {
+  assertTransport(env)
   const get = async <T>(path: string): Promise<T> => {
     const res = await fetch(`${env.url}/api${path}`, {
       headers: authHeaders(env),

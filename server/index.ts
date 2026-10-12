@@ -12,6 +12,7 @@ import type {
   TemplateInfo,
   ToolsetInfo,
 } from '@shared/api'
+import { isLoopback } from '@shared/net'
 import { TEMPLATES } from '@shared/templates'
 import { type Context, Hono } from 'hono'
 import {
@@ -29,6 +30,7 @@ import {
 import { CliError, runCli, runJson, ttlCache } from './cli'
 import {
   addEnvironment,
+  assertTransport,
   authHeaders,
   getEnvironment,
   listEnvironments,
@@ -36,7 +38,6 @@ import {
   testEnvironment,
   updateEnvironment,
 } from './environments'
-import { isLoopback } from './net'
 import { AGENTS_DIR, initPaths } from './paths'
 import { runtime } from './runtime'
 import { validateYaml } from './validate'
@@ -335,7 +336,12 @@ app.get('/api/environments', (c) => c.json(listEnvironments()))
 app.post('/api/environments', async (c) => {
   const b = await body(c)
   return c.json(
-    addEnvironment({ name: str(b, 'name'), url: str(b, 'url'), token: str(b, 'token', true) }),
+    addEnvironment({
+      name: str(b, 'name'),
+      url: str(b, 'url'),
+      token: str(b, 'token', true),
+      allowInsecure: b.allowInsecure === true,
+    }),
     201,
   )
 })
@@ -347,6 +353,7 @@ app.put('/api/environments/:id', async (c) => {
       name: str(b, 'name', true),
       url: str(b, 'url', true),
       token: str(b, 'token', true),
+      allowInsecure: typeof b.allowInsecure === 'boolean' ? b.allowInsecure : undefined,
     }),
   )
 })
@@ -366,12 +373,19 @@ app.post('/api/environments/test', async (c) => {
   const token = str(b, 'token', true)
   // No token in the form means "keep the stored one" for an existing environment.
   const stored = id ? getEnvironment(id) : undefined
-  return c.json(await testEnvironment({ url: str(b, 'url'), token: token || stored?.token }))
+  return c.json(
+    await testEnvironment({
+      url: str(b, 'url'),
+      token: token || stored?.token,
+      allowInsecure: b.allowInsecure === true,
+    }),
+  )
 })
 
 // The remote's whole /api surface, including its runtime proxy and SSE streams.
 app.all('/api/env/:id/*', async (c) => {
   const env = getEnvironment(c.req.param('id'))
+  assertTransport(env)
   const rest = c.req.path.slice(`/api/env/${env.id}/`.length)
   const res = await forward(
     c,

@@ -1,5 +1,7 @@
 # Security review — 2026-10-12
 
+Follow-up: see [the review of the remediation commit](security-review-followup.md) for current finding status and verification. This document records the original assessment.
+
 Reviewed the current working tree, including the uncommitted authentication, environment, and Docker changes. This is a source review with isolated application-level probes, not a penetration test of a deployed instance. Existing project files were not changed.
 
 The API is an administrative interface: its intended powers include writing executable agent configurations, driving tools, accessing conversations, and using provider credentials. Anyone holding the Deckhand token must be treated as a full administrator. Private-network access through the environment proxy is an intended feature, so it is not independently classified as an SSRF vulnerability here.

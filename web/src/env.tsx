@@ -10,6 +10,7 @@ export const LOCAL: EnvironmentInfo = {
   url: '',
   hasToken: false,
   insecure: false,
+  allowInsecure: false,
 }
 
 const STORAGE_KEY = 'deckhand.env'

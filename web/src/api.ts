@@ -263,7 +263,7 @@ export const api = {
       localReq<EnvironmentInfo>('PUT', `/environments/${enc(id)}`, input),
     remove: (id: string) => localReq<unknown>('DELETE', `/environments/${enc(id)}`),
     test: (id: string) => localReq<EnvironmentTest>('GET', `/environments/${enc(id)}/test`),
-    testInput: (input: { id?: string; url: string; token?: string }) =>
+    testInput: (input: { id?: string; url: string; token?: string; allowInsecure?: boolean }) =>
       localReq<EnvironmentTest>('POST', '/environments/test', input),
   },
   runtime: {
