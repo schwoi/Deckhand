@@ -1,4 +1,5 @@
 # Deckhand with the docker-agent CLI baked in. One container = one environment.
+# HOST is 0.0.0.0 inside the container, so the server refuses to start without DECKHAND_TOKEN.
 #
 #   docker build -t deckhand .
 #   docker run -d -p 4800:4800 -v deckhand:/data -e DECKHAND_TOKEN=... -e ANTHROPIC_API_KEY=... deckhand

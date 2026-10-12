@@ -48,7 +48,8 @@ bun run start        # serves dist/ and the API on :4800
 | `DECKHAND_HOME` | `~/.deckhand` | Data directory (session db, agents) |
 | `DECKHAND_AGENTS` | `$HOME_DIR/agents` | Directory holding agent YAML files; seeded with templates on first run |
 | `DECKHAND_RUNTIME` | `127.0.0.1:4801` | Listen address for the managed `docker agent serve api` process |
-| `DECKHAND_TOKEN` | unset | When set, every API request must carry `Authorization: Bearer <token>`. Required for any instance that is not loopback-only |
+| `DECKHAND_TOKEN` | unset | When set, every API request must carry `Authorization: Bearer <token>`. Required to bind anything but loopback |
+| `DECKHAND_INSECURE` | unset | `1` disables the token requirement and the loopback checks. Only for an authenticating reverse proxy in front of Deckhand |
 
 Model API keys are read from the environment of the Deckhand server process (the same environment `docker agent` would use).
 
@@ -68,9 +69,25 @@ several machines from one place, run Deckhand on each of them and add them as en
 instance you use as the dashboard (sidebar switcher → *Manage environments*). The dashboard proxies the
 selected environment's whole API, including chat streams, under `/api/env/:id/`; nothing is replicated.
 
-Remote instances must listen on a reachable address (`HOST=0.0.0.0`) and should set `DECKHAND_TOKEN`,
-which the dashboard stores per environment in `$DECKHAND_HOME/environments.json`. The dashboard itself
-can also be started with a token; the browser then asks for it once and keeps it in local storage.
+Remote instances must listen on a reachable address (`HOST=0.0.0.0`) and set `DECKHAND_TOKEN`; the server
+refuses to start on a non-loopback address without one. The dashboard stores each token in
+`$DECKHAND_HOME/environments.json` (mode 0600). The dashboard itself can also be started with a token; the
+browser then asks for it once and keeps it in local storage.
+
+Tokens are sent with every proxied request, so a plain `http://` environment on another machine exposes
+its token to anyone on the path. Deckhand marks those *unencrypted*; put HTTPS or a tunnel such as
+Tailscale or SSH in front of anything that crosses a network you do not trust.
+
+### Security model
+
+The API is an administrative interface: it writes agent files, starts processes, and uses whatever
+provider credentials the server has. Whoever holds the token is an administrator.
+
+Without a token the server only accepts loopback binds, rejects requests whose `Host` header is not a
+loopback name (DNS rebinding), rejects mutations from non-loopback origins (cross-site requests), and only
+reads `application/json` bodies. Data directories are created `0700` and agent files `0600`; existing
+directories keep their modes. The managed runtime's own port has no auth, so leave `DECKHAND_RUNTIME` on
+loopback.
 
 ## Docker
 

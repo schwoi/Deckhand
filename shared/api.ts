@@ -144,6 +144,7 @@ export interface EnvironmentInfo {
   name: string
   url: string // base URL of the remote Deckhand, e.g. http://build-box:4800
   hasToken: boolean
+  insecure: boolean // plain http to another machine: the token is sent unencrypted
 }
 export interface EnvironmentInput {
   name: string

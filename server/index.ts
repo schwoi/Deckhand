@@ -36,6 +36,7 @@ import {
   testEnvironment,
   updateEnvironment,
 } from './environments'
+import { isLoopback } from './net'
 import { AGENTS_DIR, initPaths } from './paths'
 import { runtime } from './runtime'
 import { validateYaml } from './validate'
@@ -53,21 +54,50 @@ app.use(async (c, next) => {
 })
 
 // --- auth ---
-// DECKHAND_TOKEN guards every /api route (except /api/auth, which tells the client whether to
-// ask for one). Required when the instance is reachable from other machines, e.g. as an
-// environment of another Deckhand.
+// With DECKHAND_TOKEN set, every /api route (except /api/auth, which tells the client whether to
+// ask for one) needs a bearer token. Browsers never attach that header cross-site, so it also
+// rules out CSRF. Without a token the instance must be loopback-only, and two checks keep a web
+// page from driving it anyway: the Host header must be a loopback name (defeats DNS rebinding),
+// and mutations must come from a loopback origin (defeats cross-site POSTs; the Vite dev server
+// is loopback too). DECKHAND_INSECURE=1 skips all of this for an authenticating reverse proxy.
 
 const TOKEN = process.env.DECKHAND_TOKEN || ''
+const INSECURE = process.env.DECKHAND_INSECURE === '1'
+const port = Number(process.env.PORT) || 4800
+const hostname = process.env.HOST || '127.0.0.1'
+
+if (!TOKEN && !INSECURE && !isLoopback(hostname)) {
+  console.error(
+    `HOST=${hostname} exposes the unauthenticated API to the network. Set DECKHAND_TOKEN, or DECKHAND_INSECURE=1 if something in front of Deckhand authenticates for it.`,
+  )
+  process.exit(1)
+}
 
 app.get('/api/auth', (c) => c.json({ required: !!TOKEN } satisfies AuthInfo))
 
-app.use('/api/*', async (c, next) => {
-  if (!TOKEN) return next()
-  const presented = c.req.header('authorization')?.replace(/^Bearer\s+/i, '') ?? ''
+function tokenMatches(presented: string): boolean {
   const a = Buffer.from(presented)
   const b = Buffer.from(TOKEN)
-  if (a.length === b.length && timingSafeEqual(a, b)) return next()
-  return c.json({ error: 'unauthorized' }, 401)
+  return a.length === b.length && timingSafeEqual(a, b)
+}
+
+app.use('/api/*', async (c, next) => {
+  if (TOKEN) {
+    if (tokenMatches(c.req.header('authorization')?.replace(/^Bearer\s+/i, '') ?? '')) return next()
+    return c.json({ error: 'unauthorized' }, 401)
+  }
+  if (INSECURE) return next()
+  const host = c.req.header('host') ?? ''
+  if (!isLoopback(host)) return c.json({ error: `unexpected Host header: ${host}` }, 403)
+  const origin = c.req.header('origin')
+  if (!['GET', 'HEAD'].includes(c.req.method) && origin) {
+    let ok = false
+    try {
+      ok = isLoopback(new URL(origin).hostname)
+    } catch {}
+    if (!ok) return c.json({ error: `cross-site request from ${origin} rejected` }, 403)
+  }
+  return next()
 })
 
 app.onError((err, c) => {
@@ -82,6 +112,8 @@ app.onError((err, c) => {
 type Body = Record<string, unknown>
 
 async function body(c: Context): Promise<Body> {
+  if (!/^application\/json\b/i.test(c.req.header('content-type') ?? ''))
+    throw new HttpError(400, 'content-type must be application/json')
   let data: unknown
   try {
     data = await c.req.json()
@@ -372,9 +404,6 @@ if (process.env.NODE_ENV === 'production') {
   })
 }
 
-const port = Number(process.env.PORT) || 4800
-// Loopback only: the API is unauthenticated and can read/write agent files and drive the runtime.
-const hostname = process.env.HOST || '127.0.0.1'
 console.log(`Deckhand API on http://${hostname}:${port} (agents: ${AGENTS_DIR})`)
 
 // idleTimeout 0: proxied SSE streams can be idle for long stretches while the model thinks.

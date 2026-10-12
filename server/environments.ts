@@ -2,6 +2,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { EnvironmentInfo, EnvironmentInput, EnvironmentTest, RuntimeStatus } from '@shared/api'
 import { HttpError } from './agents'
+import { isLoopback } from './net'
 import { DECKHAND_HOME } from './paths'
 
 /** Registry of remote Deckhand instances, persisted as JSON in the data directory. */
@@ -31,7 +32,12 @@ function persist(): void {
   writeFileSync(FILE, `${JSON.stringify(envs, null, 2)}\n`, { mode: 0o600 })
 }
 
-const toInfo = ({ token, ...e }: Environment): EnvironmentInfo => ({ ...e, hasToken: !!token })
+const toInfo = ({ token, ...e }: Environment): EnvironmentInfo => ({
+  ...e,
+  hasToken: !!token,
+  // The bearer token travels in the clear unless the remote is https or on this machine.
+  insecure: e.url.startsWith('http:') && !isLoopback(new URL(e.url).host),
+})
 
 export function listEnvironments(): EnvironmentInfo[] {
   return envs.map(toInfo)

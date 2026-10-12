@@ -4,6 +4,7 @@ import {
   CircleCheck,
   CircleX,
   Globe,
+  LockOpen,
   Monitor,
   Pencil,
   Plus,
@@ -66,6 +67,24 @@ export function EnvironmentSwitcher({ className }: { className?: string }) {
 
 type Draft = { id?: string; name: string; url: string; token: string }
 const EMPTY: Draft = { name: '', url: '', token: '' }
+
+/** Mirrors the server's `insecure` flag for a URL still being typed. */
+function isInsecureUrl(raw: string): boolean {
+  try {
+    const u = new URL(raw)
+    return u.protocol === 'http:' && !/^(localhost|127\.|\[::1\])/.test(u.host)
+  } catch {
+    return false
+  }
+}
+
+function InsecureBadge() {
+  return (
+    <Badge tone="warning" title="Plain http to another machine: the token is sent unencrypted">
+      <LockOpen /> unencrypted
+    </Badge>
+  )
+}
 
 function ManageEnvironmentsDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { environments, current, select, refresh } = useEnvironments()
@@ -159,6 +178,7 @@ function EnvironmentRow({
         <div className="flex items-center gap-2 text-base font-medium">
           <span className="truncate">{env.name}</span>
           {active && <Badge tone="accent">current</Badge>}
+          {env.insecure && <InsecureBadge />}
         </div>
         <div className="truncate font-mono text-xs text-faint">{env.url}</div>
         <TestLine test={test} />
@@ -242,7 +262,11 @@ function EnvironmentForm({
           data-autofocus
         />
       </Field>
-      <Field label="URL" help="Where that Deckhand listens, including the port.">
+      <Field
+        label="URL"
+        help="Where that Deckhand listens, including the port."
+        aside={isInsecureUrl(form.url) && <InsecureBadge />}
+      >
         <Input
           mono
           type="url"

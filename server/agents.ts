@@ -1,9 +1,9 @@
 import { existsSync, readdirSync, statSync } from 'node:fs'
-import { readFile, rename, unlink, writeFile } from 'node:fs/promises'
+import { chmod, readFile, rename, unlink, writeFile } from 'node:fs/promises'
 import { extname, join } from 'node:path'
 import type { AgentDetail, AgentSummary } from '@shared/api'
 import type { AgentFile } from '@shared/config'
-import { AGENTS_DIR } from './paths'
+import { AGENTS_DIR, PRIVATE_FILE } from './paths'
 import { parseYaml, validateDoc } from './validate'
 
 export const NAME_RE = /^[a-z0-9][a-z0-9._-]*$/i
@@ -108,7 +108,7 @@ export async function saveAgent(name: string, yaml: string): Promise<AgentDetail
   if (!parsed.ok)
     throw new HttpError(400, `invalid YAML: ${parsed.issue.message}`, { issues: [parsed.issue] })
   const file = agentPath(name) ?? join(AGENTS_DIR, `${name}.yaml`)
-  await writeFile(file, yaml)
+  await writeFile(file, yaml, { mode: PRIVATE_FILE })
   return build(name, file, yaml)
 }
 
@@ -133,8 +133,9 @@ export async function importAgentFile(src: string, name: string): Promise<AgentD
     await rename(src, dest)
   } catch {
     // cross-device move
-    await writeFile(dest, await readFile(src))
+    await writeFile(dest, await readFile(src), { mode: PRIVATE_FILE })
     await unlink(src)
   }
+  await chmod(dest, PRIVATE_FILE) // the pulled file keeps the mode `docker agent` gave it
   return getAgent(name)
 }
