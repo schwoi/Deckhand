@@ -15,6 +15,7 @@ a managed `docker agent serve api` process so you can chat with them and browse 
 - **Chat** — streams the Docker Agent runtime (SSE), shows tool calls and sub-agent activity, handles tool approvals.
 - **Sessions** — browse and delete sessions stored by the runtime.
 - **System** — CLI version, provider credentials (via `docker agent doctor`), available models, toolset reference, runtime logs.
+- **Environments** — add other Deckhand instances and switch between them from one dashboard.
 
 ## Requirements
 
@@ -47,6 +48,8 @@ bun run start        # serves dist/ and the API on :4800
 | `DECKHAND_HOME` | `~/.deckhand` | Data directory (session db, agents) |
 | `DECKHAND_AGENTS` | `$HOME_DIR/agents` | Directory holding agent YAML files; seeded with templates on first run |
 | `DECKHAND_RUNTIME` | `127.0.0.1:4801` | Listen address for the managed `docker agent serve api` process |
+| `DECKHAND_TOKEN` | unset | When set, every API request must carry `Authorization: Bearer <token>`. Required to bind anything but loopback |
+| `DECKHAND_INSECURE` | unset | `1` disables the token requirement and the loopback checks. Only for an authenticating reverse proxy in front of Deckhand |
 
 Model API keys are read from the environment of the Deckhand server process (the same environment `docker agent` would use).
 
@@ -59,10 +62,58 @@ Saving, creating or deleting an agent restarts the runtime (it reads the directo
 in-flight chat stream. Sessions live in SQLite, so the conversation can be continued afterwards. Deckhand records
 the child's pid and terminates a leftover runtime from a previous run on boot.
 
+## Environments
+
+Every Deckhand instance manages the agents directory and runtime of the machine it runs on. To drive
+several machines from one place, run Deckhand on each of them and add them as environments in the
+instance you use as the dashboard (sidebar switcher → *Manage environments*). The dashboard proxies the
+selected environment's whole API, including chat streams, under `/api/env/:id/`; nothing is replicated.
+
+Remote instances must listen on a reachable address (`HOST=0.0.0.0`) and set `DECKHAND_TOKEN`; the server
+refuses to start on a non-loopback address without one. The dashboard stores each token in
+`$DECKHAND_HOME/environments.json` (mode 0600). The dashboard itself can also be started with a token; the
+browser then asks for it once and keeps it in local storage.
+
+Tokens are sent with every proxied request, so a plain `http://` environment on another machine exposes
+its token to anyone on the path. Deckhand refuses such a URL unless you switch on *Allow an unencrypted
+connection* for that environment, which is meant for a VPN, a tunnel such as Tailscale or SSH, or a
+network you trust. Prefer HTTPS termination in front of any instance that crosses a network you do not.
+
+### Security model
+
+The API is an administrative interface: it writes agent files, starts processes, and uses whatever
+provider credentials the server has. Whoever holds the token is an administrator.
+
+Without a token the server only accepts loopback binds, rejects requests whose `Host` header is not
+`localhost` or a loopback IP literal (DNS rebinding), rejects mutations from other origins (cross-site
+requests), and only reads `application/json` bodies. The data directory, its files and the default agents
+directory are kept `0700`/`0600`, including on upgrade; an agents directory you point `DECKHAND_AGENTS` at,
+or a data or agents directory that is a symlink, is left as you set it. The managed runtime's own port has no auth, so leave `DECKHAND_RUNTIME` on
+loopback.
+
+## Docker
+
+The container is just another way to run an instance; the binary is baked in.
+
+```bash
+DECKHAND_TOKEN=secret ANTHROPIC_API_KEY=... docker compose up -d
+```
+
+or
+
+```bash
+docker build -t deckhand .
+docker run -d -p 4800:4800 -v deckhand:/data -e DECKHAND_TOKEN=secret -e ANTHROPIC_API_KEY=... deckhand
+```
+
+Agents and sessions live in the `/data` volume. Mount `/var/run/docker.sock` only if agents use MCP
+servers from the Docker catalog (`ref: docker:...`), as those run as containers. The build arg
+`DOCKER_AGENT_VERSION` picks the docker-agent release.
+
 ## Layout
 
 ```
-server/   Bun + Hono API: agent files, schema validation, CLI wrappers, runtime supervisor + SSE proxy
+server/   Bun + Hono API: agent files, schema validation, CLI wrappers, runtime supervisor + SSE proxy, environments
 web/      Vite + React UI
 shared/   Types shared by both, the bundled agent-schema.json, and templates
 docs/     Runtime reference notes verified against docker-agent v1.150.0

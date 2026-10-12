@@ -1,10 +1,14 @@
 import type {
   AgentDetail,
   AgentSummary,
+  AuthInfo,
   CliVersion,
   CommandResult,
   CreateAgentRequest,
   DoctorReport,
+  EnvironmentInfo,
+  EnvironmentInput,
+  EnvironmentTest,
   ModelInfo,
   RegistryPullRequest,
   RegistryPushRequest,
@@ -35,17 +39,46 @@ function errorMessage(data: unknown, res: Response): string {
   return `${res.status} ${res.statusText || 'Request failed'}`
 }
 
+// ---- Environment scoping and auth ----
+// Calls go to the selected environment: the local instance under /api, or a remote Deckhand
+// under /api/env/:id (the local server proxies). Environment management and auth are always local.
+
+const LOCAL_ENV = 'local'
+let envId = LOCAL_ENV
+export function setApiEnvironment(id: string): void {
+  envId = id
+}
+const enc = encodeURIComponent
+const base = (local = false) => (local || envId === LOCAL_ENV ? '/api' : `/api/env/${enc(envId)}`)
+
+const TOKEN_KEY = 'deckhand.token'
+export const authToken = {
+  get: () => localStorage.getItem(TOKEN_KEY) ?? '',
+  set: (t: string) => (t ? localStorage.setItem(TOKEN_KEY, t) : localStorage.removeItem(TOKEN_KEY)),
+}
+function headers(extra: Record<string, string> = {}): Record<string, string> {
+  const token = authToken.get()
+  return token ? { ...extra, authorization: `Bearer ${token}` } : extra
+}
+
+/** Fired when the local server answers 401; the app asks for a token and retries. */
+export const UNAUTHORIZED_EVENT = 'deckhand:unauthorized'
+function unauthorized(res: Response): void {
+  if (res.status === 401) window.dispatchEvent(new Event(UNAUTHORIZED_EVENT))
+}
+
 async function request<T>(
   method: string,
   path: string,
   body?: unknown,
   signal?: AbortSignal,
+  local = false,
 ): Promise<T> {
   let res: Response
   try {
-    res = await fetch(`/api${path}`, {
+    res = await fetch(`${base(local)}${path}`, {
       method,
-      headers: body === undefined ? undefined : { 'content-type': 'application/json' },
+      headers: headers(body === undefined ? {} : { 'content-type': 'application/json' }),
       body: body === undefined ? undefined : JSON.stringify(body),
       signal,
     })
@@ -53,6 +86,7 @@ async function request<T>(
     if (e instanceof DOMException && e.name === 'AbortError') throw e
     throw new ApiError(0, 'Cannot reach the Deckhand server')
   }
+  unauthorized(res)
   const text = await res.text()
   let data: unknown
   if (text) {
@@ -68,7 +102,8 @@ async function request<T>(
 
 const get = <T>(path: string) => request<T>('GET', path)
 const post = <T>(path: string, body?: unknown) => request<T>('POST', path, body ?? {})
-const enc = encodeURIComponent
+const localReq = <T>(method: string, path: string, body?: unknown) =>
+  request<T>(method, path, body, undefined, true)
 
 // ---- Runtime (docker agent serve api) shapes, proxied verbatim ----
 
@@ -149,12 +184,13 @@ async function streamSse(
   onEvent: (e: StreamEvent) => void,
   signal: AbortSignal,
 ) {
-  const res = await fetch(`/api${path}`, {
+  const res = await fetch(`${base()}${path}`, {
     method: 'POST',
-    headers: { 'content-type': 'application/json', accept: 'text/event-stream' },
+    headers: headers({ 'content-type': 'application/json', accept: 'text/event-stream' }),
     body: JSON.stringify(body),
     signal,
   })
+  unauthorized(res)
   if (!res.ok || !res.body) {
     const text = await res.text().catch(() => '')
     let data: unknown = text
@@ -218,6 +254,17 @@ export const api = {
     toolsets: () => get<ToolsetInfo[]>('/system/toolsets'),
     models: (all = false) => get<ModelInfo[]>(`/system/models${all ? '?all=1' : ''}`),
     doctor: () => get<DoctorReport>('/system/doctor'),
+  },
+  auth: () => localReq<AuthInfo>('GET', '/auth'),
+  environments: {
+    list: () => localReq<EnvironmentInfo[]>('GET', '/environments'),
+    create: (input: EnvironmentInput) => localReq<EnvironmentInfo>('POST', '/environments', input),
+    update: (id: string, input: Partial<EnvironmentInput>) =>
+      localReq<EnvironmentInfo>('PUT', `/environments/${enc(id)}`, input),
+    remove: (id: string) => localReq<unknown>('DELETE', `/environments/${enc(id)}`),
+    test: (id: string) => localReq<EnvironmentTest>('GET', `/environments/${enc(id)}/test`),
+    testInput: (input: { id?: string; url: string; token?: string; allowInsecure?: boolean }) =>
+      localReq<EnvironmentTest>('POST', '/environments/test', input),
   },
   runtime: {
     status: () => get<RuntimeStatus>('/runtime'),

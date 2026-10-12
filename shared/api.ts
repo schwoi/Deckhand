@@ -136,3 +136,32 @@ export interface RegistryPullResponse {
 export interface DuplicateAgentRequest {
   name: string
 }
+
+// --- environments (other Deckhand instances this one can drive) ---
+
+export interface EnvironmentInfo {
+  id: string
+  name: string
+  url: string // base URL of the remote Deckhand, e.g. http://build-box:4800
+  hasToken: boolean
+  insecure: boolean // plain http to another machine: the token is sent unencrypted
+  allowInsecure: boolean // operator accepted that (VPN, tunnel, trusted network)
+}
+export interface EnvironmentInput {
+  name: string
+  url: string
+  token?: string // omitted on update = keep the stored token; '' = clear it
+  allowInsecure?: boolean // required true for an insecure url; omitted on update = keep
+}
+export interface EnvironmentTest {
+  ok: boolean
+  version?: string // docker agent CLI version on the remote
+  runtime?: RuntimeState
+  error?: string
+}
+// Everything under /api/* of a remote environment is reachable at /api/env/:id/*; the local
+// instance is addressed directly under /api/*. When DECKHAND_TOKEN is set, requests need
+// `Authorization: Bearer <token>`; GET /api/auth reports whether that is the case.
+export interface AuthInfo {
+  required: boolean
+}

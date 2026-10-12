@@ -1,8 +1,10 @@
+import { timingSafeEqual } from 'node:crypto'
 import { readdirSync } from 'node:fs'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { extname, join, normalize, sep } from 'node:path'
 import type {
+  AuthInfo,
   CliVersion,
   CommandResult,
   DoctorReport,
@@ -10,6 +12,7 @@ import type {
   TemplateInfo,
   ToolsetInfo,
 } from '@shared/api'
+import { isLoopback } from '@shared/net'
 import { TEMPLATES } from '@shared/templates'
 import { type Context, Hono } from 'hono'
 import {
@@ -25,6 +28,16 @@ import {
   saveAgent,
 } from './agents'
 import { CliError, runCli, runJson, ttlCache } from './cli'
+import {
+  addEnvironment,
+  assertTransport,
+  authHeaders,
+  getEnvironment,
+  listEnvironments,
+  removeEnvironment,
+  testEnvironment,
+  updateEnvironment,
+} from './environments'
 import { AGENTS_DIR, initPaths } from './paths'
 import { runtime } from './runtime'
 import { validateYaml } from './validate'
@@ -41,6 +54,53 @@ app.use(async (c, next) => {
   )
 })
 
+// --- auth ---
+// With DECKHAND_TOKEN set, every /api route (except /api/auth, which tells the client whether to
+// ask for one) needs a bearer token. Browsers never attach that header cross-site, so it also
+// rules out CSRF. Without a token the instance must be loopback-only, and two checks keep a web
+// page from driving it anyway: the Host header must be a loopback name (defeats DNS rebinding),
+// and mutations must come from a loopback origin (defeats cross-site POSTs; the Vite dev server
+// is loopback too). DECKHAND_INSECURE=1 skips all of this for an authenticating reverse proxy.
+
+const TOKEN = process.env.DECKHAND_TOKEN || ''
+const INSECURE = process.env.DECKHAND_INSECURE === '1'
+const port = Number(process.env.PORT) || 4800
+const hostname = process.env.HOST || '127.0.0.1'
+
+if (!TOKEN && !INSECURE && !isLoopback(hostname)) {
+  console.error(
+    `HOST=${hostname} exposes the unauthenticated API to the network. Set DECKHAND_TOKEN, or DECKHAND_INSECURE=1 if something in front of Deckhand authenticates for it.`,
+  )
+  process.exit(1)
+}
+
+app.get('/api/auth', (c) => c.json({ required: !!TOKEN } satisfies AuthInfo))
+
+function tokenMatches(presented: string): boolean {
+  const a = Buffer.from(presented)
+  const b = Buffer.from(TOKEN)
+  return a.length === b.length && timingSafeEqual(a, b)
+}
+
+app.use('/api/*', async (c, next) => {
+  if (TOKEN) {
+    if (tokenMatches(c.req.header('authorization')?.replace(/^Bearer\s+/i, '') ?? '')) return next()
+    return c.json({ error: 'unauthorized' }, 401)
+  }
+  if (INSECURE) return next()
+  const host = c.req.header('host') ?? ''
+  if (!isLoopback(host)) return c.json({ error: `unexpected Host header: ${host}` }, 403)
+  const origin = c.req.header('origin')
+  if (!['GET', 'HEAD'].includes(c.req.method) && origin) {
+    let ok = false
+    try {
+      ok = isLoopback(new URL(origin).hostname)
+    } catch {}
+    if (!ok) return c.json({ error: `cross-site request from ${origin} rejected` }, 403)
+  }
+  return next()
+})
+
 app.onError((err, c) => {
   if (err instanceof HttpError) return c.json({ error: err.message, ...err.extra }, err.status)
   if (err instanceof CliError) return c.json({ error: err.message, result: err.result }, 502)
@@ -53,6 +113,8 @@ app.onError((err, c) => {
 type Body = Record<string, unknown>
 
 async function body(c: Context): Promise<Body> {
+  if (!/^application\/json\b/i.test(c.req.header('content-type') ?? ''))
+    throw new HttpError(400, 'content-type must be application/json')
   let data: unknown
   try {
     data = await c.req.json()
@@ -223,11 +285,16 @@ const HOP_BY_HOP = [
   'content-encoding',
 ]
 
-async function proxy(c: Context, upstreamPath: string): Promise<Response> {
-  if (!runtime.isRunning()) return c.json({ error: 'runtime not running' }, 503)
+/** Forward the request to `target` (query string appended), streaming the response back. */
+async function forward(
+  c: Context,
+  target: string,
+  what: string,
+  extraHeaders: Record<string, string> = {},
+): Promise<Response> {
   const req = c.req.raw
   const search = new URL(req.url).search
-  const headers = new Headers()
+  const headers = new Headers(extraHeaders)
   for (const h of ['content-type', 'accept']) {
     const v = req.headers.get(h)
     if (v) headers.set(h, v)
@@ -235,7 +302,7 @@ async function proxy(c: Context, upstreamPath: string): Promise<Response> {
   const hasBody = !['GET', 'HEAD'].includes(req.method)
   let upstream: Response
   try {
-    upstream = await fetch(`${runtime.url}/${upstreamPath}${search}`, {
+    upstream = await fetch(`${target}${search}`, {
       method: req.method,
       headers,
       body: hasBody ? await req.arrayBuffer() : undefined,
@@ -244,7 +311,7 @@ async function proxy(c: Context, upstreamPath: string): Promise<Response> {
     })
   } catch (e) {
     return c.json(
-      { error: `runtime request failed: ${e instanceof Error ? e.message : String(e)}` },
+      { error: `${what} request failed: ${e instanceof Error ? e.message : String(e)}` },
       502,
     )
   }
@@ -253,9 +320,87 @@ async function proxy(c: Context, upstreamPath: string): Promise<Response> {
   return new Response(upstream.body, { status: upstream.status, headers: out })
 }
 
+function proxy(c: Context, upstreamPath: string): Promise<Response> {
+  if (!runtime.isRunning()) return Promise.resolve(c.json({ error: 'runtime not running' }, 503))
+  return forward(c, `${runtime.url}/${upstreamPath}`, 'runtime')
+}
+
 app.all('/api/runtime/proxy/*', (c) => proxy(c, c.req.path.slice('/api/runtime/proxy/'.length)))
 // Alias matching the comment in shared/api.ts: /api/runtime/api/* -> <runtime>/api/*
 app.all('/api/runtime/api/*', (c) => proxy(c, c.req.path.slice('/api/runtime/'.length)))
+
+// --- environments (remote Deckhand instances) ---
+
+app.get('/api/environments', (c) => c.json(listEnvironments()))
+
+app.post('/api/environments', async (c) => {
+  const b = await body(c)
+  return c.json(
+    addEnvironment({
+      name: str(b, 'name'),
+      url: str(b, 'url'),
+      token: str(b, 'token', true),
+      allowInsecure: b.allowInsecure === true,
+    }),
+    201,
+  )
+})
+
+app.put('/api/environments/:id', async (c) => {
+  const b = await body(c)
+  return c.json(
+    updateEnvironment(c.req.param('id'), {
+      name: str(b, 'name', true),
+      url: str(b, 'url', true),
+      token: str(b, 'token', true),
+      allowInsecure: typeof b.allowInsecure === 'boolean' ? b.allowInsecure : undefined,
+    }),
+  )
+})
+
+app.delete('/api/environments/:id', (c) => {
+  removeEnvironment(c.req.param('id'))
+  return c.body(null, 204)
+})
+
+/** Test a stored environment (GET) or candidate settings before saving them (POST). */
+app.get('/api/environments/:id/test', async (c) =>
+  c.json(await testEnvironment(getEnvironment(c.req.param('id')))),
+)
+app.post('/api/environments/test', async (c) => {
+  const b = await body(c)
+  const id = str(b, 'id', true)
+  const token = str(b, 'token', true)
+  // No token in the form means "keep the stored one" for an existing environment.
+  const stored = id ? getEnvironment(id) : undefined
+  return c.json(
+    await testEnvironment({
+      url: str(b, 'url'),
+      token: token || stored?.token,
+      allowInsecure: b.allowInsecure === true,
+    }),
+  )
+})
+
+// The remote's whole /api surface, including its runtime proxy and SSE streams.
+app.all('/api/env/:id/*', async (c) => {
+  const env = getEnvironment(c.req.param('id'))
+  assertTransport(env)
+  const rest = c.req.path.slice(`/api/env/${env.id}/`.length)
+  const res = await forward(
+    c,
+    `${env.url}/api/${rest}`,
+    `environment "${env.name}"`,
+    authHeaders(env),
+  )
+  // A 401 from here means *our* token is missing; keep the remote's token problem distinct.
+  if (res.status === 401)
+    return c.json(
+      { error: `environment "${env.name}" rejected its token; edit the environment` },
+      502,
+    )
+  return res
+})
 
 app.all('/api/*', (c) => c.json({ error: 'not found' }, 404))
 
@@ -273,9 +418,6 @@ if (process.env.NODE_ENV === 'production') {
   })
 }
 
-const port = Number(process.env.PORT) || 4800
-// Loopback only: the API is unauthenticated and can read/write agent files and drive the runtime.
-const hostname = process.env.HOST || '127.0.0.1'
 console.log(`Deckhand API on http://${hostname}:${port} (agents: ${AGENTS_DIR})`)
 
 // idleTimeout 0: proxied SSE streams can be idle for long stretches while the model thinks.

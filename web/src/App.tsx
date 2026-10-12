@@ -1,9 +1,12 @@
 import { Bot, History, MessageSquare, Play, Server, Square } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { AuthGate } from './components/AuthGate'
+import { EnvironmentSwitcher } from './components/EnvironmentSwitcher'
 import { Button } from './components/ui/Button'
 import { ConfirmHost } from './components/ui/Dialog'
 import { Toaster } from './components/ui/toast'
 import { EditorPage } from './editor/EditorPage'
+import { EnvironmentProvider, useEnvironments } from './env'
 import { cn } from './lib/util'
 import { AgentsPage } from './pages/AgentsPage'
 import { ChatPage } from './pages/ChatPage'
@@ -14,10 +17,24 @@ import { RuntimeProvider, useRuntime } from './runtime'
 
 export function App() {
   return (
-    <RuntimeProvider>
-      <Shell />
+    <div className="flex h-dvh min-h-0 flex-col">
+      <AuthGate>
+        <EnvironmentProvider>
+          <Scoped />
+        </EnvironmentProvider>
+      </AuthGate>
       <Toaster />
       <ConfirmHost />
+    </div>
+  )
+}
+
+/** Everything below is keyed by environment so a switch starts every page from scratch. */
+function Scoped() {
+  const { current } = useEnvironments()
+  return (
+    <RuntimeProvider key={current.id}>
+      <Shell />
     </RuntimeProvider>
   )
 }
@@ -26,8 +43,9 @@ function Shell() {
   const route = useRoute()
   const section = route.page === 'editor' ? 'agents' : route.page
   return (
-    <div className="flex h-dvh min-h-0 flex-col pt-[env(safe-area-inset-top)] lg:flex-row">
+    <div className="flex min-h-0 flex-1 flex-col pt-[env(safe-area-inset-top)] lg:flex-row">
       <Sidebar section={section} />
+      <TopBar />
       <main className="flex min-h-0 min-w-0 flex-1 flex-col max-lg:pr-[env(safe-area-inset-right)] max-lg:pl-[env(safe-area-inset-left)]">
         <Page route={route} />
       </main>
@@ -43,6 +61,16 @@ const NAV: { id: Section; to: string; label: string; icon: ReactNode }[] = [
   { id: 'sessions', to: href.sessions(), label: 'Sessions', icon: <History /> },
   { id: 'system', to: href.system(), label: 'System', icon: <Server /> },
 ]
+
+/** Below lg: a slim strip with the environment switcher, since the sidebar is hidden. */
+function TopBar() {
+  return (
+    <div className="flex h-11 shrink-0 items-center gap-2 border-b bg-sunken px-3 pr-[max(0.75rem,env(safe-area-inset-right))] pl-[max(0.75rem,env(safe-area-inset-left))] lg:hidden">
+      <Logo className="size-6" />
+      <EnvironmentSwitcher className="min-w-0 flex-1" />
+    </div>
+  )
+}
 
 /** Bottom navigation below lg. Part of the flex column, so it never covers page content. */
 function TabBar({ section }: { section: Section }) {
@@ -127,6 +155,9 @@ function Sidebar({ section }: { section: Section }) {
           <div className="text-2xs text-faint">for docker agent</div>
         </div>
       </div>
+      <div className="p-2 pb-0">
+        <EnvironmentSwitcher />
+      </div>
       <nav className="flex flex-col gap-0.5 p-2" aria-label="Main">
         {NAV.map((n) => (
           <NavItem key={n.id} to={n.to} active={section === n.id} icon={n.icon} label={n.label} />
@@ -139,9 +170,9 @@ function Sidebar({ section }: { section: Section }) {
   )
 }
 
-function Logo() {
+function Logo({ className = 'size-7' }: { className?: string }) {
   return (
-    <svg viewBox="0 0 32 32" className="size-7 shrink-0" aria-hidden="true">
+    <svg viewBox="0 0 32 32" className={cn('shrink-0', className)} aria-hidden="true">
       <rect width="32" height="32" rx="8" className="fill-accent" />
       <path d="M9 12h14M9 16h10M9 20h6" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
     </svg>
