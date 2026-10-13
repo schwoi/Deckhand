@@ -48,6 +48,6 @@ sed -n 's/^data: //p' "$PROBE_ROOT/child.sse" | jq -s -e '
   any(.[]; .type=="stream_stopped" and .agent_name=="root" and .reason=="normal")
 ' >/dev/null || { echo 'child-error recovery was not exercised' >&2; exit 1; }
 
-cp "$PROBE_ROOT/max.sse" "$(dirname "$0")/fixtures/max-iterations.sse"
-cp "$PROBE_ROOT/root.sse" "$(dirname "$0")/fixtures/root-error.sse"
-cp "$PROBE_ROOT/child.sse" "$(dirname "$0")/fixtures/child-error-recovery.sse"
+redact_fixture <"$PROBE_ROOT/max.sse" >"$(dirname "$0")/fixtures/max-iterations.sse"
+redact_fixture <"$PROBE_ROOT/root.sse" >"$(dirname "$0")/fixtures/root-error.sse"
+redact_fixture <"$PROBE_ROOT/child.sse" >"$(dirname "$0")/fixtures/child-error-recovery.sse"

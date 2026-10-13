@@ -77,24 +77,6 @@ format_fixture() {
   bunx biome format --write "$@" >/dev/null
 }
 
-find_descendant() {
-  local root=$1 pattern=$2 frontier=$1 children pid
-  for _ in $(seq 1 8); do
-    children=''
-    for pid in $frontier; do children+=" $(pgrep -P "$pid" 2>/dev/null || true)"; done
-    [[ -z "${children// /}" ]] && return 1
-    pid=$(ps -p "$(tr ' ' ',' <<<"$children" | sed 's/^,*//;s/,*$//')" -o pid=,args= 2>/dev/null | awk -v p="$pattern" '$0 ~ p {print $1; exit}')
-    [[ -n "$pid" ]] && { printf '%s\n' "$pid"; return; }
-    frontier=$children
-  done
-  return 1
-}
-
-find_in_process_group() {
-  local pgid=$1 command=$2
-  ps -eo pid=,pgid=,comm= | awk -v g="$pgid" -v c="$command" '$2==g && $3==c {print $1; exit}'
-}
-
 runtime_descendants() {
   local frontier=${1:-$RUNTIME_PID} children='' pid
   while [[ -n "${frontier// /}" ]]; do

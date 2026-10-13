@@ -88,5 +88,5 @@
   "safety_policy": "autonomous",
   "input_tokens": 224,
   "output_tokens": 34,
-  "working_dir": "/tmp/deckhand-runtime-probe.wuzblW/work"
+  "working_dir": "/tmp/deckhand-runtime-probe.REDACTED/work"
 }

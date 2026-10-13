@@ -72,7 +72,7 @@ jq -e '[.messages[] | .message | select(.role == "tool" and (.content | contains
 jq -n --arg first "$resume_one" --arg second "$resume_two" --arg reject "$reject_response" \
   --arg result "$(cat "$WORK_DIR/approval-result.txt" 2>/dev/null || true)" \
   '{first_resume:$first,second_resume:$second,reject_resume:$reject,result_file:$result}'
-cp "$PROBE_ROOT/approval.sse" "${FIXTURE_OUT:-$(dirname "$0")/fixtures/approval.sse}"
-cp "$PROBE_ROOT/rejection.sse" "${REJECTION_OUT:-$(dirname "$0")/fixtures/rejection.sse}"
+redact_fixture <"$PROBE_ROOT/approval.sse" >"${FIXTURE_OUT:-$(dirname "$0")/fixtures/approval.sse}"
+redact_fixture <"$PROBE_ROOT/rejection.sse" >"${REJECTION_OUT:-$(dirname "$0")/fixtures/rejection.sse}"
 redact_fixture <"$PROBE_ROOT/rejection-session.json" >"${REJECTION_SESSION_OUT:-$(dirname "$0")/fixtures/rejection-session.json}"
 format_fixture "${REJECTION_SESSION_OUT:-$(dirname "$0")/fixtures/rejection-session.json}"

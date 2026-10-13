@@ -33,4 +33,4 @@ jq -n \
   --arg output "$(cat "$WORK_DIR/relative-output.txt" 2>/dev/null || true)" \
   --argjson files "$(find "$PROBE_ROOT" -type f -printf '%P\n' | sort | jq -Rsc 'split("\n")[:-1]')" \
   '{probe_root:$root,session_id:$session_id,working_dir_output:$output,files:$files}'
-cp "$PROBE_ROOT/path.sse" "${FIXTURE_OUT:-$(dirname "$0")/fixtures/path-and-store.sse}"
+redact_fixture <"$PROBE_ROOT/path.sse" >"${FIXTURE_OUT:-$(dirname "$0")/fixtures/path-and-store.sse}"

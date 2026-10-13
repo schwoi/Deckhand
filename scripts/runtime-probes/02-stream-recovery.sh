@@ -33,6 +33,6 @@ jq -n \
   --arg file "$(cat "$WORK_DIR/disconnect-result.txt" 2>/dev/null || true)" \
   --slurpfile snapshot "$PROBE_ROOT/snapshot.json" \
   '{result_file:$file,snapshot:$snapshot[0]}'
-cp "$PROBE_ROOT/disconnected.sse" "${FIXTURE_OUT:-$(dirname "$0")/fixtures/disconnected.sse}"
-jq . "$PROBE_ROOT/snapshot.json" >"${SNAPSHOT_OUT:-$(dirname "$0")/fixtures/disconnected-snapshot.json}"
+redact_fixture <"$PROBE_ROOT/disconnected.sse" >"${FIXTURE_OUT:-$(dirname "$0")/fixtures/disconnected.sse}"
+jq . "$PROBE_ROOT/snapshot.json" | redact_fixture >"${SNAPSHOT_OUT:-$(dirname "$0")/fixtures/disconnected-snapshot.json}"
 format_fixture "${SNAPSHOT_OUT:-$(dirname "$0")/fixtures/disconnected-snapshot.json}"

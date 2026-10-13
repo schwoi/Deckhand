@@ -7,7 +7,7 @@ inherited runtimes and recorded descendants are signalled directly with bounded
 TERM/KILL phases. They do not write Docker Agent's global configuration or
 Deckhand's agent files.
 
-Requirements: `docker agent`, `bun`, `curl`, `jq`, and a usable
+Requirements: `docker agent`, `bun`, `curl`, `jq`, `pstree`, `rg` (ripgrep), and a usable
 `github-copilot/gpt-5.4-nano` credential. Check availability without exposing
 credential values with:
 

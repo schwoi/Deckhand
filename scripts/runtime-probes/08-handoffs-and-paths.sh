@@ -70,6 +70,6 @@ paths_id=$(new_session "$WORK_DIR" | jq -r .id)
 stream_turn "$paths_id" skill-mcp 'Use origin skill and MCP origin.' "$PROBE_ROOT/paths.sse" || true
 rg -q 'start failed:' "$PROBE_ROOT/paths.sse" || { echo 'relative MCP failure was not observed' >&2; exit 1; }
 rg -q 'skill.*origin.*not found' "$PROBE_ROOT/paths.sse" || { echo 'relative skill failure was not observed' >&2; exit 1; }
-cp "$PROBE_ROOT/handoff.sse" "$(dirname "$0")/fixtures/handoff.sse"
+redact_fixture <"$PROBE_ROOT/handoff.sse" >"$(dirname "$0")/fixtures/handoff.sse"
 redact_fixture <"$PROBE_ROOT/paths.sse" >"$(dirname "$0")/fixtures/skill-mcp-relative.sse"
 redact_fixture <"$RUNTIME_LOG" >"$(dirname "$0")/fixtures/skill-mcp-relative.log"

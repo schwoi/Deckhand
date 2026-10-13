@@ -47,8 +47,8 @@ jq -n \
   --argjson token_usage "$(sed -n 's/^data: //p' "$PROBE_ROOT/team.sse" | jq -s '[.[]|select(.type=="token_usage")|{agent_name,session_id,usage}]')" \
   --argjson limit "$(sed -n 's/^data: //p' "$PROBE_ROOT/limit.sse" | jq -s '.')" \
   '{team_types:$team_types,team_session_fields:$team_sessions,token_usage:$token_usage,limit_events:$limit}'
-cp "$PROBE_ROOT/team.sse" "${TEAM_OUT:-$(dirname "$0")/fixtures/subagent.sse}"
-cp "$PROBE_ROOT/limit.sse" "${LIMIT_OUT:-$(dirname "$0")/fixtures/budget-exceeded.sse}"
+redact_fixture <"$PROBE_ROOT/team.sse" >"${TEAM_OUT:-$(dirname "$0")/fixtures/subagent.sse}"
+redact_fixture <"$PROBE_ROOT/limit.sse" >"${LIMIT_OUT:-$(dirname "$0")/fixtures/budget-exceeded.sse}"
 jq -n \
   --slurpfile events <(sed -n 's/^data: //p' "$PROBE_ROOT/team.sse") \
   --slurpfile root "$PROBE_ROOT/root-session.json" \
