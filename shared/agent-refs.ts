@@ -138,13 +138,6 @@ export function removeAgent(config: AgentFile, name: string): AgentFile {
   return mapAgents(config, (k, a) => (k === name ? null : [k, rewriteRefs(a, map)]))
 }
 
-/** Targets of one relationship kind as written (force_handoff is a single target). */
-export function relationTargets(agent: unknown, kind: RelationKind): string[] {
-  return relationEntries({ a: agent })
-    .filter((e) => e.kind === kind)
-    .map((e) => e.ref)
-}
-
 /** One configured relationship as written, with its YAML path. */
 export interface RelationEntry {
   from: string
