@@ -1,0 +1,13 @@
+# compose.yaml, but built from the local source tree.
+#
+#   docker compose -f compose.dev.yaml up -d --build
+services:
+  deckhand:
+    extends:
+      file: compose.yaml
+      service: deckhand
+    image: deckhand:dev
+    build: .
+
+volumes:
+  deckhand:

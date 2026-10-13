@@ -111,7 +111,10 @@ loopback.
 
 ## Docker
 
-The container is just another way to run an instance; the binary is baked in.
+The container is just another way to run an instance; the binary is baked in. Every push to `main`
+publishes `ghcr.io/schwoi/deckhand` for linux/amd64 and linux/arm64, tagged `latest` and
+`yyyy.MM.dd.Rev` (for example `2026.10.13.1`; Rev counts releases that day). Each release also gets a
+matching git tag.
 
 ```bash
 DECKHAND_TOKEN=secret ANTHROPIC_API_KEY=... docker compose up -d
@@ -120,8 +123,13 @@ DECKHAND_TOKEN=secret ANTHROPIC_API_KEY=... docker compose up -d
 or
 
 ```bash
-docker build -t deckhand .
-docker run -d -p 4800:4800 -v deckhand:/data -e DECKHAND_TOKEN=secret -e ANTHROPIC_API_KEY=... deckhand
+docker run -d -p 4800:4800 -v deckhand:/data -e DECKHAND_TOKEN=secret -e ANTHROPIC_API_KEY=... ghcr.io/schwoi/deckhand
+```
+
+To build from source instead:
+
+```bash
+DECKHAND_TOKEN=secret ANTHROPIC_API_KEY=... docker compose -f compose.dev.yaml up -d --build
 ```
 
 Agents and sessions live in the `/data` volume. Mount `/var/run/docker.sock` only if agents use MCP

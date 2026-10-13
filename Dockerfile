@@ -1,14 +1,18 @@
 # Deckhand with the docker-agent CLI baked in. One container = one environment.
 # HOST is 0.0.0.0 inside the container, so the server refuses to start without DECKHAND_TOKEN.
 #
+# Prebuilt images (linux/amd64, linux/arm64) are published to ghcr.io/schwoi/deckhand,
+# tagged yyyy.MM.dd.Rev and latest. Build this file only to run from source:
+#
 #   docker build -t deckhand .
 #   docker run -d -p 4800:4800 -v deckhand:/data -e DECKHAND_TOKEN=... -e ANTHROPIC_API_KEY=... deckhand
 #
-# See compose.yaml for the same thing with Docker Compose.
+# compose.yaml runs the published image; compose.dev.yaml builds this file.
 
 ARG DOCKER_AGENT_VERSION=v1.150.0
 
-FROM oven/bun:1 AS build
+# The build output is platform-independent JS, so build natively instead of under emulation.
+FROM --platform=$BUILDPLATFORM oven/bun:1 AS build
 WORKDIR /app
 COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile
