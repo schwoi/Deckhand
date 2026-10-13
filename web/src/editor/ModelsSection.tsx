@@ -1,3 +1,4 @@
+import type { ModelInfo } from '@shared/api'
 import type { AgentFile, ModelConfig, ProviderConfig } from '@shared/config'
 import { PROVIDERS } from '@shared/config'
 import { Plus } from 'lucide-react'
@@ -10,7 +11,8 @@ import { Code, EmptyState } from '../components/ui/misc'
 import { omitKey, renameKey, uniqueKey, withField } from '../lib/util'
 import { SectionTitle } from './AgentsSection'
 import { NamedEntry } from './NamedEntry'
-import { str, useModelCatalog } from './hooks'
+import { str, useDoctor, useModelCatalog } from './hooks'
+import { useLiveModelOptions } from './liveModels'
 
 function usersOf(config: AgentFile, model: string): string[] {
   return Object.entries(config.agents ?? {})
@@ -31,6 +33,15 @@ export function ModelsSection({
   const providers = config.providers ?? {}
   const names = Object.keys(models)
   const catalog = useModelCatalog()
+  const doctor = useDoctor()
+  // Built-in providers only when docker agent finds a credential for them (or DMR is running);
+  // everything is offered if doctor could not run. Any provider can still be typed.
+  const configured = useMemo(() => {
+    if (!doctor) return [...PROVIDERS]
+    const found = new Set(doctor.providers.filter((p) => p.found).map((p) => p.provider))
+    if (/run|ok|avail/i.test(doctor.dmr?.status ?? '')) found.add('dmr')
+    return PROVIDERS.filter((p) => found.has(p))
+  }, [doctor])
   const providerOptions = useMemo(
     () => [
       ...Object.keys(providers).map((p) => ({
@@ -38,9 +49,9 @@ export function ModelsSection({
         group: 'Custom providers',
         hint: providers[p]?.base_url,
       })),
-      ...PROVIDERS.map((p) => ({ value: p, group: 'Built-in' })),
+      ...configured.map((p) => ({ value: p, group: 'Configured' })),
     ],
-    [providers],
+    [providers, configured],
   )
 
   const setModels = (m: Record<string, ModelConfig>) => onChange(withField(config, 'models', m))
@@ -102,9 +113,6 @@ export function ModelsSection({
           const users = usersOf(config, name)
           const set = <K extends keyof ModelConfig>(k: K, v: ModelConfig[K]) =>
             setModels({ ...models, [name]: withField(m, k, v) })
-          const suggestions = catalog
-            .filter((c) => !m.provider || c.provider === m.provider)
-            .map((c) => ({ value: c.model, hint: m.provider ? undefined : c.provider }))
           return (
             <NamedEntry
               key={name}
@@ -124,15 +132,14 @@ export function ModelsSection({
                     options={providerOptions}
                   />
                 </Field>
-                <Field label="Model" path={`models.${name}.model`}>
-                  <Combobox
-                    mono
-                    value={m.model ?? ''}
-                    onChange={(v) => set('model', v)}
-                    options={suggestions}
-                    placeholder="gpt-5"
-                  />
-                </Field>
+                <ModelField
+                  path={`models.${name}.model`}
+                  model={m}
+                  providers={providers}
+                  catalog={catalog}
+                  configured={configured}
+                  onChange={(v) => set('model', v)}
+                />
               </div>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                 <Field label="Max tokens" help="Output budget, not context.">
@@ -299,5 +306,50 @@ export function ModelsSection({
         })}
       </section>
     </div>
+  )
+}
+
+/** The model id, suggested from the provider's live list (custom endpoints included), then the catalog. */
+function ModelField({
+  path,
+  model: m,
+  providers,
+  catalog,
+  configured,
+  onChange,
+}: {
+  path: string
+  model: ModelConfig
+  providers: Record<string, ProviderConfig>
+  catalog: ModelInfo[]
+  configured: readonly string[]
+  onChange: (v: string) => void
+}) {
+  const custom =
+    m.provider && Object.hasOwn(providers, m.provider) ? providers[m.provider] : undefined
+  const baseUrl = m.base_url ?? custom?.base_url
+  const kind = custom?.provider ?? m.provider ?? ''
+  const { merge, status } = useLiveModelOptions(
+    !m.provider
+      ? null
+      : baseUrl
+        ? { provider: m.provider, base_url: baseUrl, token_key: m.token_key ?? custom?.token_key }
+        : { provider: kind },
+  )
+  const options = merge(
+    catalog
+      .filter((c) => (kind ? c.provider === kind : configured.includes(c.provider)))
+      .map((c) => ({ value: c.model, hint: kind ? undefined : c.provider })),
+  )
+  return (
+    <Field label="Model" path={path} help={status}>
+      <Combobox
+        mono
+        value={m.model ?? ''}
+        onChange={onChange}
+        options={options}
+        placeholder="gpt-5"
+      />
+    </Field>
   )
 }

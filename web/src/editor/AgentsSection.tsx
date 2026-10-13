@@ -12,7 +12,7 @@ import { Badge, Code, Disclosure } from '../components/ui/misc'
 import { NAME_RE, cn, omitKey, renameKey, uniqueKey, withField } from '../lib/util'
 import { ToolsetList } from './Toolsets'
 import { SAFETY_INFO } from './catalog'
-import { useModelCatalog } from './hooks'
+import { useDoctor } from './hooks'
 
 export function orderedAgentNames(config: AgentFile): string[] {
   const names = Object.keys(config.agents ?? {})
@@ -108,7 +108,7 @@ function AgentForm({
   const agent: AgentConfig = agents[name] ?? {}
   const others = Object.keys(agents).filter((n) => n !== name)
   const path = `agents.${name}`
-  const catalog = useModelCatalog()
+  const auto = useDoctor()?.auto_model
 
   const setAgent = (next: AgentConfig) =>
     onChange({ ...config, agents: { ...agents, [name]: next } })
@@ -169,19 +169,23 @@ function AgentForm({
     onRenamed(Object.keys(rest)[0] ?? '')
   }
 
-  const modelOptions = useMemo<Option[]>(() => {
-    const named = Object.entries(config.models ?? {}).map(([k, m]) => ({
-      value: k,
-      hint: [m.provider, m.model].filter(Boolean).join('/'),
-      group: 'Named models',
-    }))
-    const inline = catalog.map((m) => ({
-      value: `${m.provider}/${m.model}`,
-      hint: m.default ? 'default' : undefined,
-      group: m.provider,
-    }))
-    return [...named, ...inline]
-  }, [config.models, catalog])
+  // Only what this file configures, plus `auto` (docker-agent picks at runtime). Inline
+  // provider/model strings still work by typing them.
+  const modelOptions = useMemo<Option[]>(
+    () => [
+      ...Object.entries(config.models ?? {}).map(([k, m]) => ({
+        value: k,
+        hint: [m.provider, m.model].filter(Boolean).join('/'),
+        group: 'Models in this file',
+      })),
+      {
+        value: 'auto',
+        hint: auto ? `picks ${auto.provider}/${auto.model}` : 'docker agent picks one',
+        group: 'Default',
+      },
+    ],
+    [config.models, auto],
+  )
 
   const agentOptions = others.map((n) => ({ value: n, hint: agents[n]?.description }))
   const instruction = Array.isArray(agent.instruction)

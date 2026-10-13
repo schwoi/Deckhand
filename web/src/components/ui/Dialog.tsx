@@ -45,7 +45,7 @@ export function Dialog({
         if (e.target === e.currentTarget) onClose()
       }}
       className={cn(
-        'overflow-hidden border border-line-strong bg-surface p-0 text-fg shadow-2xl shadow-black/20 open:flex open:flex-col',
+        'overflow-hidden border border-line-strong bg-surface p-0 text-left text-fg shadow-2xl shadow-black/20 open:flex open:flex-col',
         // phone: bottom sheet
         'mx-0 mt-auto mb-0 max-h-[90dvh] w-full max-w-none rounded-t-2xl border-b-0 pb-[env(safe-area-inset-bottom)] max-sm:pr-[env(safe-area-inset-right)] max-sm:pl-[env(safe-area-inset-left)] max-sm:open:animate-sheet-in',
         // tablet and up: centered card

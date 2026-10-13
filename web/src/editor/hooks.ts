@@ -1,6 +1,6 @@
-import type { ModelInfo } from '@shared/api'
+import type { DoctorReport, LiveModels, ModelInfo } from '@shared/api'
 import { useEffect, useState } from 'react'
-import { api } from '../api'
+import { api, errorText } from '../api'
 
 let catalog: Promise<ModelInfo[]> | null = null
 
@@ -19,6 +19,57 @@ export function useModelCatalog(): ModelInfo[] {
     }
   }, [])
   return models
+}
+
+let doctor: { at: number; report: Promise<DoctorReport | null> } | null = null
+
+/**
+ * docker agent doctor: which providers have credentials and the auto model. Shared for 30s so
+ * every model entry doesn't run it, yet a key added on the System page shows up soon after.
+ */
+export function useDoctor(): DoctorReport | null {
+  const [report, setReport] = useState<DoctorReport | null>(null)
+  useEffect(() => {
+    if (!doctor || Date.now() - doctor.at > 30_000)
+      doctor = { at: Date.now(), report: api.system.doctor().catch(() => null) }
+    let live = true
+    doctor.report.then((r) => live && setReport(r))
+    return () => {
+      live = false
+    }
+  }, [])
+  return report
+}
+
+export interface LiveQuery {
+  provider: string
+  base_url?: string
+  token_key?: string
+}
+
+/**
+ * The models `provider` itself lists for this account (the server caches them for a few
+ * minutes). Debounced, since the provider is often being typed. `null` while loading.
+ */
+export function useLiveModels(q: LiveQuery | null): LiveModels | null {
+  const key = q?.provider ? JSON.stringify([q.provider, q.base_url, q.token_key]) : ''
+  const [result, setResult] = useState<{ key: string; value: LiveModels } | null>(null)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: key captures q
+  useEffect(() => {
+    if (!q?.provider) return
+    let live = true
+    const t = setTimeout(() => {
+      api.system
+        .liveModels(q)
+        .catch((e): LiveModels => ({ models: [], error: errorText(e) }))
+        .then((value) => live && setResult({ key, value }))
+    }, 300)
+    return () => {
+      live = false
+      clearTimeout(t)
+    }
+  }, [key])
+  return result?.key === key ? result.value : null
 }
 
 export function strList(v: unknown): string[] | undefined {

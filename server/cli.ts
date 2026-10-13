@@ -70,7 +70,7 @@ export async function runCli(
 /** Memoize an async producer per key for ttlMs. Failed promises are not cached. */
 export function ttlCache<T>(ttlMs: number) {
   const entries = new Map<string, { at: number; value: Promise<T> }>()
-  return (key: string, produce: () => Promise<T>): Promise<T> => {
+  const cached = (key: string, produce: () => Promise<T>): Promise<T> => {
     const hit = entries.get(key)
     if (hit && Date.now() - hit.at < ttlMs) return hit.value
     const value = produce()
@@ -78,6 +78,7 @@ export function ttlCache<T>(ttlMs: number) {
     value.catch(() => entries.delete(key))
     return value
   }
+  return Object.assign(cached, { clear: () => entries.clear() })
 }
 
 export class CliError extends Error {
