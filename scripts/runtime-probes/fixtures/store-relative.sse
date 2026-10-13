@@ -1,0 +1,60 @@
+data: {"agent_name":"root","timestamp":"2026-10-13T20:35:31.493493922+11:00","type":"team_info","available_agents":[{"name":"root","description":"","provider":"github-copilot","model":"gpt-5.4-nano","thinking":"off","execution_capabilities":{"mode":"native","tool_execution":"docker-agent","tool_approval":"docker-agent-policy","budget_supported":true,"compaction_supported":true,"mid_turn_steering_supported":true,"prompt_hook_context_supported":true}}],"current_agent":"root"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T20:35:31.493506761+11:00","type":"mcp_init_started"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T20:35:31.495799046+11:00","type":"mcp_init_finished"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T20:35:31.495804804+11:00","type":"toolset_info","available_tools":5,"loading":false}
+
+data: {"timestamp":"2026-10-13T20:35:31.495829807+11:00","type":"user_message","message":"Populate the relative memory store.","session_id":"34016b20-a2ca-4d7c-b2fd-92c679290cbf","session_position":0}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T20:35:31.495831465+11:00","type":"stream_started","session_id":"34016b20-a2ca-4d7c-b2fd-92c679290cbf"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T20:35:31.495834238+11:00","type":"mcp_init_started"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T20:35:31.496336303+11:00","type":"mcp_init_finished"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T20:35:31.496336686+11:00","type":"toolset_info","available_tools":5,"loading":false}
+
+data: {"timestamp":"2026-10-13T20:35:31.496339535+11:00","type":"agent_info","agent_name":"root","model":"github-copilot/gpt-5.4-nano","description":""}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T20:35:32.726161335+11:00","type":"partial_tool_call","tool_call":{"id":"call_l8eqz20WNLh1CWNogE6M4OMZ","type":"function","function":{"name":"add_memory"}},"tool_definition":{"name":"add_memory","category":"memory","description":"Add a new memory to the database","parameters":{"additionalProperties":false,"properties":{"memory":{"description":"The memory content to store","type":"string"},"category":{"description":"Optional category to organize the memory (e.g. preference, fact, project)","type":"string"}},"required":["memory"],"type":"object"},"annotations":{"idempotentHint":false,"readOnlyHint":false,"title":"Add Memory"},"outputSchema":{"type":"string"}}}
+
+data: {"timestamp":"0001-01-01T00:00:00Z","type":"session_title","session_id":"34016b20-a2ca-4d7c-b2fd-92c679290cbf","title":"Populating Relative Memory Store"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T20:35:32.941606752+11:00","type":"partial_tool_call","tool_call":{"id":"call_l8eqz20WNLh1CWNogE6M4OMZ","type":"function","function":{"name":"add_memory","arguments":"{\"memory\":\"RELATIVE_MEMORY\",\"category\":\"fact\"}"}}}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T20:35:32.942525761+11:00","type":"message_added","session_id":"34016b20-a2ca-4d7c-b2fd-92c679290cbf","assistant_message_empty":true,"has_tool_calls":true}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T20:35:32.942530205+11:00","type":"token_usage","session_id":"34016b20-a2ca-4d7c-b2fd-92c679290cbf","usage":{"input_tokens":500,"output_tokens":24,"context_length":524,"context_limit":400000,"cost":0.00013,"last_message":{"input_tokens":500,"output_tokens":24,"cached_input_tokens":0,"cached_write_tokens":0,"service_tier":"default","Cost":0.00013,"Model":"github-copilot/gpt-5.4-nano","finish_reason":"tool_calls"}}}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T20:35:32.942634831+11:00","type":"hook_started","session_id":"34016b20-a2ca-4d7c-b2fd-92c679290cbf","hook_event":"tool_input_transform"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T20:35:32.942760469+11:00","type":"hook_finished","session_id":"34016b20-a2ca-4d7c-b2fd-92c679290cbf","hook_event":"tool_input_transform","duration_ms":0,"allowed":true}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T20:35:32.94278133+11:00","type":"tool_call","tool_call":{"id":"call_l8eqz20WNLh1CWNogE6M4OMZ","type":"function","function":{"name":"add_memory","arguments":"{\"memory\":\"RELATIVE_MEMORY\",\"category\":\"fact\"}"}},"tool_definition":{"name":"add_memory","category":"memory","description":"Add a new memory to the database","parameters":{"additionalProperties":false,"properties":{"memory":{"description":"The memory content to store","type":"string"},"category":{"description":"Optional category to organize the memory (e.g. preference, fact, project)","type":"string"}},"required":["memory"],"type":"object"},"annotations":{"idempotentHint":false,"readOnlyHint":false,"title":"Add Memory"},"outputSchema":{"type":"string"}}}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T20:35:32.957380777+11:00","type":"hook_started","session_id":"34016b20-a2ca-4d7c-b2fd-92c679290cbf","hook_event":"tool_response_transform"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T20:35:32.95753672+11:00","type":"hook_finished","session_id":"34016b20-a2ca-4d7c-b2fd-92c679290cbf","hook_event":"tool_response_transform","duration_ms":0,"allowed":true}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T20:35:32.957540382+11:00","type":"tool_call_response","tool_call_id":"call_l8eqz20WNLh1CWNogE6M4OMZ","tool_definition":{"name":"add_memory","category":"memory","description":"Add a new memory to the database","parameters":{"additionalProperties":false,"properties":{"memory":{"description":"The memory content to store","type":"string"},"category":{"description":"Optional category to organize the memory (e.g. preference, fact, project)","type":"string"}},"required":["memory"],"type":"object"},"annotations":{"idempotentHint":false,"readOnlyHint":false,"title":"Add Memory"},"outputSchema":{"type":"string"}},"response":"Memory added successfully with ID: 1791884132942824328","result":{"output":"Memory added successfully with ID: 1791884132942824328"}}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T20:35:32.957545234+11:00","type":"message_added","session_id":"34016b20-a2ca-4d7c-b2fd-92c679290cbf"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T20:35:32.958427096+11:00","type":"mcp_init_started"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T20:35:32.958719692+11:00","type":"mcp_init_finished"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T20:35:32.958719938+11:00","type":"toolset_info","available_tools":5,"loading":false}
+
+data: {"timestamp":"2026-10-13T20:35:32.958723241+11:00","type":"agent_info","agent_name":"root","model":"github-copilot/gpt-5.4-nano","description":""}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T20:35:33.707821762+11:00","type":"agent_choice","content":"DONE","session_id":"34016b20-a2ca-4d7c-b2fd-92c679290cbf","message_id":"5fc6cd96-e338-4bfe-9448-908119f85fed"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T20:35:33.786335126+11:00","type":"message_added","session_id":"34016b20-a2ca-4d7c-b2fd-92c679290cbf"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T20:35:33.786339568+11:00","type":"token_usage","session_id":"34016b20-a2ca-4d7c-b2fd-92c679290cbf","usage":{"input_tokens":549,"output_tokens":5,"context_length":554,"context_limit":400000,"cost":0.00024605,"last_message":{"input_tokens":549,"output_tokens":5,"cached_input_tokens":0,"cached_write_tokens":0,"service_tier":"default","Cost":0.00011605000000000002,"Model":"github-copilot/gpt-5.4-nano","finish_reason":"stop"}}}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T20:35:33.786436966+11:00","type":"stream_stopped","session_id":"34016b20-a2ca-4d7c-b2fd-92c679290cbf","reason":"normal","finish_reason":"stop"}
+

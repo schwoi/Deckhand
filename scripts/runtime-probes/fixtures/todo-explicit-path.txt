@@ -1,0 +1,3 @@
+{"message":"failed to run session: load \"todo-path\": parsing config file\nfailed to unmarshal agent config for root: path can only be used with type 'memory' or 'tasks'"}
+
+HTTP 500

@@ -1,0 +1,8 @@
+{
+  "signal": "INT",
+  "launch_mode": "inherited",
+  "signal_target": "plugin_pid",
+  "plugin_pgid": "165332",
+  "sleep_pid": "165735",
+  "descendant_survived": false
+}

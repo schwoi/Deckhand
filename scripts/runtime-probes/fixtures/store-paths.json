@@ -1,0 +1,10 @@
+{
+  "config_dir_files": ["absolute-memory.yaml", "relative-memory.yaml", "todo-path.yaml"],
+  "working_dir_files": [
+    "memory.lock",
+    "relative-memory.db",
+    "relative-memory.db-shm",
+    "relative-memory.db-wal"
+  ],
+  "absolute_dir_files": ["memory.db", "memory.db-shm", "memory.db-wal", "memory.lock"]
+}

@@ -1,0 +1,60 @@
+data: {"agent_name":"root","timestamp":"2026-10-13T20:44:11.777812365+11:00","type":"team_info","available_agents":[{"name":"root","description":"","provider":"github-copilot","model":"gpt-5.4-nano","thinking":"off","execution_capabilities":{"mode":"native","tool_execution":"docker-agent","tool_approval":"docker-agent-policy","budget_supported":true,"compaction_supported":true,"mid_turn_steering_supported":true,"prompt_hook_context_supported":true}},{"name":"specialist","description":"","provider":"github-copilot","model":"gpt-5.4-nano","thinking":"off","execution_capabilities":{"mode":"native","tool_execution":"docker-agent","tool_approval":"docker-agent-policy","budget_supported":true,"compaction_supported":true,"mid_turn_steering_supported":true,"prompt_hook_context_supported":true}}],"current_agent":"root"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T20:44:11.777829171+11:00","type":"mcp_init_started"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T20:44:11.77823553+11:00","type":"mcp_init_finished"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T20:44:11.77824128+11:00","type":"toolset_info","available_tools":1,"loading":false}
+
+data: {"timestamp":"2026-10-13T20:44:11.778266297+11:00","type":"user_message","message":"Hand off now.","session_id":"b36110f3-18b0-4f9a-8a45-58a380fb509d","session_position":0}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T20:44:11.778267646+11:00","type":"stream_started","session_id":"b36110f3-18b0-4f9a-8a45-58a380fb509d"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T20:44:11.778279448+11:00","type":"mcp_init_started"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T20:44:11.778377904+11:00","type":"mcp_init_finished"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T20:44:11.77837815+11:00","type":"toolset_info","available_tools":1,"loading":false}
+
+data: {"timestamp":"2026-10-13T20:44:11.778380179+11:00","type":"agent_info","agent_name":"root","model":"github-copilot/gpt-5.4-nano","description":""}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T20:44:13.133503873+11:00","type":"partial_tool_call","tool_call":{"id":"call_84gCnNnTvNXPO0dv5j5OeUJm","type":"function","function":{"name":"handoff"}},"tool_definition":{"name":"handoff","category":"handoff","description":"Use this function to hand off the conversation to the selected agent.","parameters":{"additionalProperties":false,"properties":{"agent":{"description":"The name of the agent to hand off the conversation to.","type":"string"}},"required":["agent"],"type":"object"},"annotations":{"idempotentHint":false,"readOnlyHint":true,"title":"Handoff Conversation"},"outputSchema":null}}
+
+data: {"timestamp":"0001-01-01T00:00:00Z","type":"session_title","session_id":"b36110f3-18b0-4f9a-8a45-58a380fb509d","title":"Hand Off Now"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T20:44:13.343907053+11:00","type":"partial_tool_call","tool_call":{"id":"call_84gCnNnTvNXPO0dv5j5OeUJm","type":"function","function":{"name":"handoff","arguments":"{\"agent\":\"specialist\"}"}}}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T20:44:13.344506979+11:00","type":"message_added","session_id":"b36110f3-18b0-4f9a-8a45-58a380fb509d","assistant_message_empty":true,"has_tool_calls":true}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T20:44:13.344510941+11:00","type":"token_usage","session_id":"b36110f3-18b0-4f9a-8a45-58a380fb509d","usage":{"input_tokens":238,"output_tokens":19,"context_length":257,"context_limit":400000,"cost":0.00007135,"last_message":{"input_tokens":238,"output_tokens":19,"cached_input_tokens":0,"cached_write_tokens":0,"service_tier":"default","Cost":0.00007135,"Model":"github-copilot/gpt-5.4-nano","finish_reason":"tool_calls"}}}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T20:44:13.344596566+11:00","type":"hook_started","session_id":"b36110f3-18b0-4f9a-8a45-58a380fb509d","hook_event":"tool_input_transform"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T20:44:13.344694727+11:00","type":"hook_finished","session_id":"b36110f3-18b0-4f9a-8a45-58a380fb509d","hook_event":"tool_input_transform","duration_ms":0,"allowed":true}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T20:44:13.344715208+11:00","type":"tool_call","tool_call":{"id":"call_84gCnNnTvNXPO0dv5j5OeUJm","type":"function","function":{"name":"handoff","arguments":"{\"agent\":\"specialist\"}"}},"tool_definition":{"name":"handoff","category":"handoff","description":"Use this function to hand off the conversation to the selected agent.","parameters":{"additionalProperties":false,"properties":{"agent":{"description":"The name of the agent to hand off the conversation to.","type":"string"}},"required":["agent"],"type":"object"},"annotations":{"idempotentHint":false,"readOnlyHint":true,"title":"Handoff Conversation"},"outputSchema":null}}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T20:44:13.34473112+11:00","type":"hook_started","session_id":"b36110f3-18b0-4f9a-8a45-58a380fb509d","hook_event":"tool_response_transform"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T20:44:13.344778032+11:00","type":"hook_finished","session_id":"b36110f3-18b0-4f9a-8a45-58a380fb509d","hook_event":"tool_response_transform","duration_ms":0,"allowed":true}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T20:44:13.344778763+11:00","type":"tool_call_response","tool_call_id":"call_84gCnNnTvNXPO0dv5j5OeUJm","tool_definition":{"name":"handoff","category":"handoff","description":"Use this function to hand off the conversation to the selected agent.","parameters":{"additionalProperties":false,"properties":{"agent":{"description":"The name of the agent to hand off the conversation to.","type":"string"}},"required":["agent"],"type":"object"},"annotations":{"idempotentHint":false,"readOnlyHint":true,"title":"Handoff Conversation"},"outputSchema":null},"response":"The agent root handed off the conversation to you. Your available handoff agents and tools are specified in the system messages that follow. Only use those capabilities - do not attempt to use tools or hand off to agents that you see in the conversation history from previous agents, as those were available to different agents with different capabilities. Look at the conversation history for context, but only use the handoff agents and tools that are listed in your system messages below. Complete your part of the task and hand off to the next appropriate agent in your workflow (if any are available to you), or respond directly to the user if you are the final agent.","result":{"output":"The agent root handed off the conversation to you. Your available handoff agents and tools are specified in the system messages that follow. Only use those capabilities - do not attempt to use tools or hand off to agents that you see in the conversation history from previous agents, as those were available to different agents with different capabilities. Look at the conversation history for context, but only use the handoff agents and tools that are listed in your system messages below. Complete your part of the task and hand off to the next appropriate agent in your workflow (if any are available to you), or respond directly to the user if you are the final agent."}}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T20:44:13.34478195+11:00","type":"message_added","session_id":"b36110f3-18b0-4f9a-8a45-58a380fb509d"}
+
+data: {"agent_name":"specialist","timestamp":"2026-10-13T20:44:13.344966393+11:00","type":"toolset_info","available_tools":0,"loading":false}
+
+data: {"timestamp":"2026-10-13T20:44:13.344968628+11:00","type":"agent_info","agent_name":"specialist","model":"github-copilot/gpt-5.4-nano","description":""}
+
+data: {"agent_name":"specialist","timestamp":"2026-10-13T20:44:14.464894165+11:00","type":"agent_choice","content":"HAND","session_id":"b36110f3-18b0-4f9a-8a45-58a380fb509d","message_id":"4313528f-47fd-4ffe-8c14-5be829cd1e66"}
+
+data: {"agent_name":"specialist","timestamp":"2026-10-13T20:44:14.465061061+11:00","type":"agent_choice","content":"OFF","session_id":"b36110f3-18b0-4f9a-8a45-58a380fb509d","message_id":"4313528f-47fd-4ffe-8c14-5be829cd1e66"}
+
+data: {"agent_name":"specialist","timestamp":"2026-10-13T20:44:14.465191972+11:00","type":"agent_choice","content":"_DONE","session_id":"b36110f3-18b0-4f9a-8a45-58a380fb509d","message_id":"4313528f-47fd-4ffe-8c14-5be829cd1e66"}
+
+data: {"agent_name":"specialist","timestamp":"2026-10-13T20:44:14.688679451+11:00","type":"message_added","session_id":"b36110f3-18b0-4f9a-8a45-58a380fb509d"}
+
+data: {"agent_name":"specialist","timestamp":"2026-10-13T20:44:14.688688627+11:00","type":"token_usage","session_id":"b36110f3-18b0-4f9a-8a45-58a380fb509d","usage":{"input_tokens":178,"output_tokens":7,"context_length":185,"context_limit":400000,"cost":0.0001157,"last_message":{"input_tokens":178,"output_tokens":7,"cached_input_tokens":0,"cached_write_tokens":0,"service_tier":"default","Cost":0.00004435,"Model":"github-copilot/gpt-5.4-nano","finish_reason":"stop"}}}
+
+data: {"agent_name":"specialist","timestamp":"2026-10-13T20:44:14.688778891+11:00","type":"stream_stopped","session_id":"b36110f3-18b0-4f9a-8a45-58a380fb509d","reason":"normal","finish_reason":"stop"}
+

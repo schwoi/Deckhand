@@ -1,0 +1,62 @@
+data: {"agent_name":"root","timestamp":"2026-10-13T18:11:12.398205513+11:00","type":"team_info","available_agents":[{"name":"root","description":"","provider":"github-copilot","model":"gpt-5.4-nano","thinking":"off","execution_capabilities":{"mode":"native","tool_execution":"docker-agent","tool_approval":"docker-agent-policy","budget_supported":true,"compaction_supported":true,"mid_turn_steering_supported":true,"prompt_hook_context_supported":true}}],"current_agent":"root"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T18:11:12.398208035+11:00","type":"budget_usage","session_id":"5da1cf75-eebc-495e-b758-19456bb18fe6","budgets":[{"name":"run","cost":0,"tokens":0,"max_tokens":1,"elapsed_seconds":0}]}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T18:11:12.39821579+11:00","type":"toolset_info","available_tools":0,"loading":false}
+
+data: {"timestamp":"2026-10-13T18:11:12.39823205+11:00","type":"user_message","message":"Exceed the configured budget.","session_id":"5da1cf75-eebc-495e-b758-19456bb18fe6","session_position":0}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T18:11:12.398234226+11:00","type":"stream_started","session_id":"5da1cf75-eebc-495e-b758-19456bb18fe6"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T18:11:12.398238536+11:00","type":"toolset_info","available_tools":0,"loading":false}
+
+data: {"timestamp":"2026-10-13T18:11:12.398241158+11:00","type":"agent_info","agent_name":"root","model":"github-copilot/gpt-5.4-nano","description":""}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T18:11:13.599042083+11:00","type":"agent_choice","content":"I","session_id":"5da1cf75-eebc-495e-b758-19456bb18fe6","message_id":"eb296ff0-f0cd-4aed-96ef-8547d7632535"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T18:11:13.599129453+11:00","type":"agent_choice","content":" can","session_id":"5da1cf75-eebc-495e-b758-19456bb18fe6","message_id":"eb296ff0-f0cd-4aed-96ef-8547d7632535"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T18:11:13.600243186+11:00","type":"agent_choice","content":"’t","session_id":"5da1cf75-eebc-495e-b758-19456bb18fe6","message_id":"eb296ff0-f0cd-4aed-96ef-8547d7632535"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T18:11:13.600244641+11:00","type":"agent_choice","content":" help","session_id":"5da1cf75-eebc-495e-b758-19456bb18fe6","message_id":"eb296ff0-f0cd-4aed-96ef-8547d7632535"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T18:11:13.812258821+11:00","type":"agent_choice","content":" with","session_id":"5da1cf75-eebc-495e-b758-19456bb18fe6","message_id":"eb296ff0-f0cd-4aed-96ef-8547d7632535"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T18:11:13.812262468+11:00","type":"agent_choice","content":" exceeding","session_id":"5da1cf75-eebc-495e-b758-19456bb18fe6","message_id":"eb296ff0-f0cd-4aed-96ef-8547d7632535"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T18:11:13.812263262+11:00","type":"agent_choice","content":" the","session_id":"5da1cf75-eebc-495e-b758-19456bb18fe6","message_id":"eb296ff0-f0cd-4aed-96ef-8547d7632535"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T18:11:13.812440401+11:00","type":"agent_choice","content":" configured","session_id":"5da1cf75-eebc-495e-b758-19456bb18fe6","message_id":"eb296ff0-f0cd-4aed-96ef-8547d7632535"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T18:11:13.81244473+11:00","type":"agent_choice","content":" budget","session_id":"5da1cf75-eebc-495e-b758-19456bb18fe6","message_id":"eb296ff0-f0cd-4aed-96ef-8547d7632535"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T18:11:13.812445552+11:00","type":"agent_choice","content":".","session_id":"5da1cf75-eebc-495e-b758-19456bb18fe6","message_id":"eb296ff0-f0cd-4aed-96ef-8547d7632535"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T18:11:13.813194865+11:00","type":"budget_usage","session_id":"5da1cf75-eebc-495e-b758-19456bb18fe6","budgets":[{"name":"run","cost":0.000021899999999999997,"tokens":36,"max_tokens":1,"elapsed_seconds":1.414941821,"per_agent":[{"agent_name":"root","cost":0.000021899999999999997,"tokens":36,"active_seconds":1.414941821}]}]}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T18:11:13.813203545+11:00","type":"message_added","session_id":"5da1cf75-eebc-495e-b758-19456bb18fe6"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T18:11:13.813205479+11:00","type":"token_usage","session_id":"5da1cf75-eebc-495e-b758-19456bb18fe6","usage":{"input_tokens":22,"output_tokens":14,"context_length":36,"context_limit":400000,"cost":0.000021899999999999997,"last_message":{"input_tokens":22,"output_tokens":14,"cached_input_tokens":0,"cached_write_tokens":0,"service_tier":"default","Cost":0.000021899999999999997,"Model":"github-copilot/gpt-5.4-nano","finish_reason":"stop"}}}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T18:11:13.813249759+11:00","type":"stream_stopped","session_id":"5da1cf75-eebc-495e-b758-19456bb18fe6","reason":"normal","finish_reason":"stop"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T18:11:13.845556858+11:00","type":"team_info","available_agents":[{"name":"root","description":"","provider":"github-copilot","model":"gpt-5.4-nano","thinking":"off","execution_capabilities":{"mode":"native","tool_execution":"docker-agent","tool_approval":"docker-agent-policy","budget_supported":true,"compaction_supported":true,"mid_turn_steering_supported":true,"prompt_hook_context_supported":true}}],"current_agent":"root"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T18:11:13.845563133+11:00","type":"budget_usage","session_id":"5da1cf75-eebc-495e-b758-19456bb18fe6","budgets":[{"name":"run","cost":0.000021899999999999997,"tokens":36,"max_tokens":1,"elapsed_seconds":1.414941821,"per_agent":[{"agent_name":"root","cost":0.000021899999999999997,"tokens":36,"active_seconds":1.414941821}]}]}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T18:11:13.845573265+11:00","type":"toolset_info","available_tools":0,"loading":false}
+
+data: {"timestamp":"2026-10-13T18:11:13.845594254+11:00","type":"user_message","message":"Try another turn after exhaustion.","session_id":"5da1cf75-eebc-495e-b758-19456bb18fe6","session_position":2}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T18:11:13.845595847+11:00","type":"stream_started","session_id":"5da1cf75-eebc-495e-b758-19456bb18fe6"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T18:11:13.845600612+11:00","type":"toolset_info","available_tools":0,"loading":false}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T18:11:13.845606007+11:00","type":"budget_exceeded","session_id":"5da1cf75-eebc-495e-b758-19456bb18fe6","budget":"run","limit":"max_tokens","used":"36 tokens","max":"1 tokens","config_path":"budget.max_tokens","message":"Execution stopped after reaching the configured budget.max_tokens limit (used 36 tokens of 1 tokens).","stop_message":{"agent_name":"root","message":{"role":"assistant","content":"Execution stopped after reaching the configured budget.max_tokens limit (used 36 tokens of 1 tokens).","created_at":"2026-10-13T18:11:13+11:00"}}}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T18:11:13.845612007+11:00","type":"agent_choice","content":"Execution stopped after reaching the configured budget.max_tokens limit (used 36 tokens of 1 tokens).","session_id":"5da1cf75-eebc-495e-b758-19456bb18fe6","message_id":"561d90c9-9599-4d9a-bbde-a00dedc50ad3"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T18:11:13.845614358+11:00","type":"message_added","session_id":"5da1cf75-eebc-495e-b758-19456bb18fe6"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T18:11:13.845617334+11:00","type":"stream_stopped","session_id":"5da1cf75-eebc-495e-b758-19456bb18fe6","reason":"budget_exceeded"}
+
