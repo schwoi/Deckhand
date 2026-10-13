@@ -68,7 +68,7 @@ export interface ModelInfo {
   default?: boolean
 }
 
-/** GET /api/system/models/live: what the provider itself lists for this account. */
+/** POST /api/system/models/live: what the provider itself lists for this account. */
 export interface LiveModels {
   models: string[]
   error?: string // why the list is empty: no credential, rejected, unreachable…
