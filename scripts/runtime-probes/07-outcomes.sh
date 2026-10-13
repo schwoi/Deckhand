@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 source "$(dirname "$0")/lib.sh"
-trap cleanup_probe EXIT INT TERM
+install_probe_traps
 
 cat >"$AGENTS_DIR/max-iterations.yaml" <<'EOF'
 version: 16
@@ -40,6 +40,13 @@ curl --silent --no-buffer --show-error -w '\nHTTP %{http_code}\n' -H 'content-ty
   "http://127.0.0.1:$PORT/api/sessions/$root_id/agent/root-error" >"$PROBE_ROOT/root.sse" || true
 child_id=$(new_session "$WORK_DIR" | jq -r .id)
 curl --silent --no-buffer --max-time 90 -H 'content-type: application/json' -d '{"messages":[{"role":"user","content":"Call transfer_task to broken now, then recover from its error."}]}' "http://127.0.0.1:$PORT/api/sessions/$child_id/agent/child-recovery" >"$PROBE_ROOT/child.sse" || true
+grep -q '"type":"max_iterations_reached"' "$PROBE_ROOT/max.sse" || { echo 'max-iterations gate was not exercised' >&2; exit 1; }
+grep -q '"type":"error"' "$PROBE_ROOT/root.sse" || { echo 'root error was not exercised' >&2; exit 1; }
+sed -n 's/^data: //p' "$PROBE_ROOT/child.sse" | jq -s -e '
+  any(.[]; .type=="stream_stopped" and .agent_name=="broken" and .reason=="error") and
+  any(.[]; .type=="sub_session_completed") and
+  any(.[]; .type=="stream_stopped" and .agent_name=="root" and .reason=="normal")
+' >/dev/null || { echo 'child-error recovery was not exercised' >&2; exit 1; }
 
 cp "$PROBE_ROOT/max.sse" "$(dirname "$0")/fixtures/max-iterations.sse"
 cp "$PROBE_ROOT/root.sse" "$(dirname "$0")/fixtures/root-error.sse"

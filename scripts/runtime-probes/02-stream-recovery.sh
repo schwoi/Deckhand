@@ -2,7 +2,7 @@
 
 set -euo pipefail
 source "$(dirname "$0")/lib.sh"
-trap cleanup_probe EXIT INT TERM
+install_probe_traps
 
 cat >"$AGENTS_DIR/stream-probe.yaml" <<'EOF'
 version: 16
@@ -26,6 +26,8 @@ curl --silent --no-buffer \
 sleep 7
 curl --silent --fail-with-body "http://127.0.0.1:$PORT/api/sessions/$session_id" \
   >"$PROBE_ROOT/snapshot.json"
+[[ ! -e "$WORK_DIR/disconnect-result.txt" ]] || { echo 'disconnected upstream unexpectedly completed tool effect' >&2; exit 1; }
+jq -e '[.messages[].message | select(.role=="tool" and (.content|contains("canceled by the user")))] | length > 0' "$PROBE_ROOT/snapshot.json" >/dev/null
 
 jq -n \
   --arg file "$(cat "$WORK_DIR/disconnect-result.txt" 2>/dev/null || true)" \
@@ -33,3 +35,4 @@ jq -n \
   '{result_file:$file,snapshot:$snapshot[0]}'
 cp "$PROBE_ROOT/disconnected.sse" "${FIXTURE_OUT:-$(dirname "$0")/fixtures/disconnected.sse}"
 jq . "$PROBE_ROOT/snapshot.json" >"${SNAPSHOT_OUT:-$(dirname "$0")/fixtures/disconnected-snapshot.json}"
+format_fixture "${SNAPSHOT_OUT:-$(dirname "$0")/fixtures/disconnected-snapshot.json}"

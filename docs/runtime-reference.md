@@ -45,7 +45,7 @@ Always set env `DOCKER_AGENT_HIDE_TELEMETRY_BANNER=1` when spawning it.
 | `tool_call` | `tool_call:{id, type, function:{name, arguments}}`, `tool_definition` |
 | `tool_call_confirmation` | same as tool_call; **the stream pauses until POST /resume** |
 | `tool_call_output` / `tool_call_response` | `tool_call_id`, tool definition, raw output/response, `result?` |
-| `token_usage` | cumulative for that event's session/agent; `last_message` is the delta; parent totals exclude child sessions |
+| `token_usage` | Per-call `input_tokens`, `output_tokens`, `context_length`, and `last_message`; cumulative session `cost`; parent frames exclude child sessions |
 | `session_title` | `title` |
 | `budget_usage` / `budget_exceeded` | budget info |
 | `elicitation_request` | MCP elicitation (answer via POST /elicitation) |
@@ -59,7 +59,10 @@ Always set env `DOCKER_AGENT_HIDE_TELEMETRY_BANNER=1` when spawning it.
 | `sub_session_completed` | explicit `parent_session_id` and embedded `sub_session` snapshot |
 
 Sub-agent activity arrives on the same stream with a different `agent_name` / `session_id`.
-`budget_usage` is cumulative across the run and includes `per_agent` totals; it includes child
-sessions. Token budgets are checked at turn boundaries and may overshoot during an in-flight call.
-Dropping the POST/SSE client cancels an active turn/tool. A snapshot can reconcile persisted state,
-but no inactive-session event replay was verified (`GET .../events` returned no event source).
+Sum token fields across frames per session, but keep the latest `cost` (or sum
+`last_message.Cost`). `GET /sessions/:id` retains only the latest call's token
+fields and omits cost. `budget_usage` is cumulative across the run and includes
+`per_agent` and child-session totals. Token budgets are checked at turn boundaries
+and may overshoot during an in-flight call. Dropping the POST/SSE client cancels
+an active turn/tool. Snapshots reconcile persisted state, but
+`GET .../events?after=0` returned no event source both active and inactive.

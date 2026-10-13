@@ -1,0 +1,6 @@
+{
+  "case": "TERM during inherited-runtime probe",
+  "exit_status": 143,
+  "elapsed_seconds": 3,
+  "survivors": []
+}

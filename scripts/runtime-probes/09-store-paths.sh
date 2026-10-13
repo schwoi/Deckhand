@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 source "$(dirname "$0")/lib.sh"
-trap cleanup_probe EXIT INT TERM
+install_probe_traps
 
 absolute_todo="$PROBE_ROOT/absolute/todo.db"
 absolute_memory="$PROBE_ROOT/absolute/memory.db"
@@ -44,7 +44,10 @@ absolute_id=$(new_session "$WORK_DIR" | jq -r .id)
 stream_turn "$absolute_id" absolute-memory 'Populate the absolute memory store.' "$PROBE_ROOT/absolute.sse"
 todo_id=$(new_session "$WORK_DIR" | jq -r .id)
 curl --silent --show-error -w '\nHTTP %{http_code}\n' -H 'content-type: application/json' -d '{"messages":[{"role":"user","content":"Populate todo."}]}' "http://127.0.0.1:$PORT/api/sessions/$todo_id/agent/todo-path" >"$PROBE_ROOT/todo.txt" || true
+[[ -f "$WORK_DIR/relative-memory.db" && -f "$absolute_memory" ]] || { echo 'memory path effects missing' >&2; exit 1; }
+grep -q "path can only be used with type 'memory' or 'tasks'" "$PROBE_ROOT/todo.txt" || { echo 'todo path rejection was not observed' >&2; exit 1; }
 jq -n --argjson config "$(find "$AGENTS_DIR" -maxdepth 1 -type f -printf '%f\n' | sort | jq -Rsc 'split("\n")[:-1]')" --argjson work "$(find "$WORK_DIR" -maxdepth 1 -type f -printf '%f\n' | sort | jq -Rsc 'split("\n")[:-1]')" --argjson absolute "$(find "$PROBE_ROOT/absolute" -maxdepth 1 -type f -printf '%f\n' | sort | jq -Rsc 'split("\n")[:-1]')" '{config_dir_files:$config,working_dir_files:$work,absolute_dir_files:$absolute}' >"$(dirname "$0")/fixtures/store-paths.json"
 cp "$PROBE_ROOT/relative.sse" "$(dirname "$0")/fixtures/store-relative.sse"
 cp "$PROBE_ROOT/absolute.sse" "$(dirname "$0")/fixtures/store-absolute.sse"
 cp "$PROBE_ROOT/todo.txt" "$(dirname "$0")/fixtures/todo-explicit-path.txt"
+format_fixture "$(dirname "$0")/fixtures/store-paths.json"

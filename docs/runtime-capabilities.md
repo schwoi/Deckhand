@@ -100,15 +100,29 @@ Build only explicit edges and key tools by `(session_id, tool_call_id)`. Probes:
 
 ## 5. Usage and cost accounting
 
-**Verdict: PARTIAL.** `token_usage` is cumulative per session. Root changed from
-356/92/$0.0001862 to 602/123/$0.00046035; `last_message` was the delta. The child
-reported its own 185/147/$0.00022075, excluded from root `token_usage`.
-`budget_usage` is run-wide and shared: after delegation it showed 780 tokens and
-$0.00040695 with a `per_agent` split, then 1505/$0.0006811 after root resumed.
+**Verdict: PARTIAL.** The fresh two-call root and two-call child trace establishes
+field-specific semantics. `input_tokens` and `output_tokens` are per model call,
+not cumulative. `context_length` is also per call and equalled that frame's input
+plus output tokens. `last_message` repeats the current call's token fields and its
+`Cost`. In contrast, lowercase `cost` is cumulative for that session: its final
+value equals the sum of all `last_message.Cost` values.
 
-Use latest `token_usage` per session, never sum those frames; use `budget_usage`
-for run totals. Unpriced-provider cost behavior remains **UNVERIFIED**, so cost
-stays nullable. Probe/fixture: `04-hierarchy-and-limits.sh`, `subagent.sse`.
+The exact fresh arithmetic is root `(356+85)+(455+57) = 953` tokens and child
+`(378+31)+(423+7) = 839`; `953+839 = 1,792`, exactly the final `budget_usage`
+total and its `per_agent` split. Root cost `$0.00017745+$0.00016225 =
+$0.00033970`; child cost `$0.00011435+$0.00009335 = $0.00020770`; together they
+equal the budget cost `$0.00054740`. The older fixture independently gives root
+`(356+94)+(550+87) = 1,087`, matching its budget entry rather than latest-frame
+`637`.
+
+Therefore sum `input_tokens` and `output_tokens` frames by `session_id`; retain
+the latest lowercase `cost` per session (or sum `last_message.Cost`, never both);
+and use the latest `budget_usage` as the authoritative run total. Treat
+`context_length` and `last_message` as per-call observations, not aggregands.
+Afterward `GET /api/sessions/:id` reported only the latest call's token fields
+(root 455/57, child 423/7) and no `cost`, so it cannot reconstruct totals.
+Unpriced-provider behavior remains **UNVERIFIED**. Probe/fixtures:
+`04-hierarchy-and-limits.sh`, `subagent.sse`, `usage-accounting.json`.
 
 ## 6. Cancellation and descendants
 
@@ -125,20 +139,27 @@ a session row and usage, but has no terminal-status field/evidence. Crash cases
 therefore require reconciliation and an `interrupted` outcome. Graceful HTTP
 delete is verified; crash-safe cleanup is not. Persist plugin and descendant
 identities and perform bounded explicit cleanup. Fixtures: `standalone-*` and
-`http-surface.json`.
+`http-surface.json`. Probe cleanup now records detached versus inherited launch
+mode, snapshots descendants, sends inherited signals to PIDs rather than an
+unrelated process group, and bounds TERM and KILL phases. `10-cleanup-bounds.sh`
+interrupted an inherited-runtime probe during a real shell call; it exited 143
+in 1 second with no recorded survivor (`cleanup-bounds.json`).
 
 ## 7. Snapshot and replay recovery
 
 **Verdict: NOT SUPPORTED for reattachment after capture loss.**
-`GET /api/sessions/:id/snapshot` returned `streaming`, `last_event_seq`, messages,
-totals, and workdir. A normal session GET after disconnect recovered persisted
-messages including tool cancellation. But `GET /api/sessions/:id/events`
-returned 404 `{"message":"no event source for session"}` when inactive. No
-cursor/replay API capable of recovering missed frames was verified.
+`06-http-surface.sh` requested the snapshot during a live shell call and after
+normal completion: `streaming` changed from `true` to `false`, while
+`last_event_seq` was `0` in both. It also requested the inventoried replay form
+`GET /api/sessions/:id/events?after=0` in both states; both returned HTTP 404
+`{"message":"no event source for session"}`. Thus `/events` cannot reattach even
+while this session is active. A normal session GET after a disconnected POST did
+recover persisted messages including tool cancellation, but no missed frames.
 
 Snapshots reconcile conversation state, not event order or timing. Record a
 trace gap/interruption and do not advertise reattachment. Probes:
-`02-stream-recovery.sh`, `06-http-surface.sh`; fixture `http-surface.json`.
+`02-stream-recovery.sh`, `06-http-surface.sh`; fixtures `snapshot-events.json`,
+`snapshot-events.sse`, and `disconnected-snapshot.json`.
 
 ## 8. Limits
 
@@ -165,12 +186,14 @@ tool-call ID but no separate request ID. POST `/resume` with
 the original stream continued. Repeating it after completion returned the same
 200: duplicate resolution is a silent no-op, not a conflict.
 
-Reject is verified: `{"confirmation":"reject"}` returns 200 and the original
-tool gets a rejection response; the model may still complete normally.
+Reject is verified under strict safety: the probe requires confirmation before
+POSTing `{"confirmation":"reject"}`, which returns 200. The stream and session
+record both contain `The user rejected the tool call.`, and the tool's marker is
+absent, proving it did not execute; the model may still complete normally.
 Wrong-session and elicitation remain **UNVERIFIED**. Deckhand must
 serialize by session, map its own approval ID to session/tool ID, and enforce
 already-resolved conflicts itself. Probe/fixture: `03-approval.sh`,
-`approval.sse`.
+`approval.sse`, `rejection.sse`, and `rejection-session.json`.
 
 ## 10. Observed event types
 
@@ -200,8 +223,9 @@ directories, server-owned SSE capture, explicit child events, approvals, shared
 budget telemetry, and snapshots. CLI control-plane replay/control was not proven.
 
 The adapter must keep the upstream POST alive independent of browsers, persist
-every frame, supervise a process group, record gaps on capture loss, and project
-terminal state conservatively.
+every frame, supervise detached groups or explicitly tracked inherited
+descendants, use bounded TERM-then-KILL shutdown, record gaps on capture loss,
+and project terminal state conservatively.
 
 ## Capabilities Deckhand must not advertise yet
 

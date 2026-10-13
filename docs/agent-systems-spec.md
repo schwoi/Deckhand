@@ -202,7 +202,15 @@ Use runtime IDs to correlate tool calls and responses, including source session/
 
 Timing is based on server receipt unless source timestamps are available. Distinguish whole-run wall time, turn time, and tool time. Parallel agent durations are not added to produce wall time.
 
-Usage aggregation must verify whether upstream reports deltas or cumulative totals, and whether parent totals include children. Never sum overlapping totals. Show per-agent attribution only if supported, otherwise show authoritative run totals or unavailable. Cost is runtime-reported or explicitly estimated with a versioned pricing source; unknown provider pricing stays unknown.
+Usage aggregation must define semantics per field rather than per event. For the
+verified Docker Agent adapter, sum each `token_usage.input_tokens` and
+`output_tokens` frame by session; treat `context_length` and `last_message` as
+per-call observations; retain the latest cumulative lowercase `cost` (or sum
+`last_message.Cost`, never both); and use the latest `budget_usage` for the
+authoritative run and `per_agent` totals. Session GET token fields are only the
+latest call and cannot reconstruct totals. Other adapters must separately verify
+delta/cumulative and child-inclusion semantics. Cost is runtime-reported or
+explicitly estimated with a versioned pricing source; unknown pricing stays unknown.
 
 ### Acceptance criteria
 

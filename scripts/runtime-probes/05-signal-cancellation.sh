@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 source "$(dirname "$0")/lib.sh"
-trap cleanup_probe EXIT INT TERM
+install_probe_traps
 
 cat >"$AGENTS_DIR/signal-probe.yaml" <<'EOF'
 version: 16
@@ -37,13 +37,17 @@ run_case() {
   [[ -n "$shell_pid" ]] && probe_pids+=",$shell_pid"
   [[ -n "$sleep_pid" ]] && probe_pids+=",$sleep_pid"
   ps -p "$probe_pids" -o pid=,ppid=,pgid=,lstart=,args= >"$PROBE_ROOT/$label.before.ps" 2>/dev/null || true
+  track_runtime_descendants
   if [[ "$launch_mode" == detached ]]; then
     kill "-$signal" -- "-$plugin_pgid"
   else
     kill "-$signal" "$RUNTIME_PID"
   fi
+  if ! wait_runtime_bounded 50; then
+    signal_runtime KILL
+    wait_runtime_bounded 20 || { echo "$label runtime did not stop within 7 seconds" >&2; return 1; }
+  fi
   wait "$RUNTIME_PID" 2>/dev/null || true
-  RUNTIME_PID=''
   sleep 1
   ps -p "$probe_pids" -o pid=,ppid=,pgid=,lstart=,args= >"$PROBE_ROOT/$label.after-process.ps" 2>/dev/null || true
   [[ -n "$sleep_pid" ]] && kill -0 "$sleep_pid" 2>/dev/null && survived=true
@@ -54,6 +58,9 @@ run_case() {
   fi
   kill "$stream_pid" 2>/dev/null || true
   wait "$stream_pid" 2>/dev/null || true
+  RUNTIME_PID=''
+  RUNTIME_LAUNCH_MODE=''
+  RUNTIME_DESCENDANTS=''
 }
 
 run_case TERM inherited sigterm

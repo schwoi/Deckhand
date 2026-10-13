@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 source "$(dirname "$0")/lib.sh"
-trap cleanup_probe EXIT INT TERM
+install_probe_traps
 
 mkdir -p "$AGENTS_DIR/.agents/skills/origin" "$WORK_DIR/.agents/skills/origin"
 cat >"$AGENTS_DIR/.agents/skills/origin/SKILL.md" <<'EOF'
@@ -62,8 +62,14 @@ EOF
 start_runtime
 handoff_id=$(new_session "$WORK_DIR" | jq -r .id)
 stream_turn "$handoff_id" handoff 'Hand off now.' "$PROBE_ROOT/handoff.sse"
+sed -n 's/^data: //p' "$PROBE_ROOT/handoff.sse" | jq -s -e '
+  any(.[]; .type=="tool_call" and .tool_call.function.name=="handoff") and
+  any(.[]; .type=="stream_stopped" and .agent_name=="specialist" and .reason=="normal")
+' >/dev/null || { echo 'handoff was not exercised' >&2; exit 1; }
 paths_id=$(new_session "$WORK_DIR" | jq -r .id)
 stream_turn "$paths_id" skill-mcp 'Use origin skill and MCP origin.' "$PROBE_ROOT/paths.sse" || true
+rg -q 'start failed:' "$PROBE_ROOT/paths.sse" || { echo 'relative MCP failure was not observed' >&2; exit 1; }
+rg -q 'skill.*origin.*not found' "$PROBE_ROOT/paths.sse" || { echo 'relative skill failure was not observed' >&2; exit 1; }
 cp "$PROBE_ROOT/handoff.sse" "$(dirname "$0")/fixtures/handoff.sse"
 redact_fixture <"$PROBE_ROOT/paths.sse" >"$(dirname "$0")/fixtures/skill-mcp-relative.sse"
 redact_fixture <"$RUNTIME_LOG" >"$(dirname "$0")/fixtures/skill-mcp-relative.log"

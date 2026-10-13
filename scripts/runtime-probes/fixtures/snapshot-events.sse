@@ -1,0 +1,60 @@
+data: {"agent_name":"root","timestamp":"2026-10-13T21:31:12.572954925+11:00","type":"team_info","available_agents":[{"name":"root","description":"","provider":"github-copilot","model":"gpt-5.4-nano","thinking":"off","execution_capabilities":{"mode":"native","tool_execution":"docker-agent","tool_approval":"docker-agent-policy","budget_supported":true,"compaction_supported":true,"mid_turn_steering_supported":true,"prompt_hook_context_supported":true}}],"current_agent":"root"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:31:12.57297071+11:00","type":"mcp_init_started"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:31:12.573482804+11:00","type":"mcp_init_finished"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:31:12.573484673+11:00","type":"toolset_info","available_tools":1,"loading":false}
+
+data: {"timestamp":"2026-10-13T21:31:12.57351368+11:00","type":"user_message","message":"Run the snapshot and event-source probe.","session_id":"8d31cf1d-bf11-4eae-b439-cba2703d6971","session_position":0}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:31:12.573515759+11:00","type":"stream_started","session_id":"8d31cf1d-bf11-4eae-b439-cba2703d6971"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:31:12.573518345+11:00","type":"mcp_init_started"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:31:12.57366338+11:00","type":"mcp_init_finished"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:31:12.573663737+11:00","type":"toolset_info","available_tools":1,"loading":false}
+
+data: {"timestamp":"2026-10-13T21:31:12.573666414+11:00","type":"agent_info","agent_name":"root","model":"github-copilot/gpt-5.4-nano","description":""}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:31:13.736221913+11:00","type":"partial_tool_call","tool_call":{"id":"call_HCTHpXp4Ok5uvLCa2ZkGI5mp","type":"function","function":{"name":"shell"}},"tool_definition":{"name":"shell","category":"shell","description":"Executes the given shell command with bash on Linux. If unsure which shell syntax to use, call get_environment_info first.","parameters":{"additionalProperties":false,"properties":{"cmd":{"description":"Shell command","type":"string"},"cwd":{"description":"Working directory (default \".\")","type":"string"},"timeout":{"description":"Timeout in seconds (default 30)","type":"integer"}},"required":["cmd"],"type":"object"},"annotations":{"idempotentHint":false,"readOnlyHint":false,"title":"Shell"},"outputSchema":{"type":"string"}}}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:31:13.956305753+11:00","type":"partial_tool_call","tool_call":{"id":"call_HCTHpXp4Ok5uvLCa2ZkGI5mp","type":"function","function":{"name":"shell","arguments":"{\"cmd\":\"sleep 4; printf replay-done \u003e replay-result.txt\",\"cwd\":null,\"timeout\":30}"}}}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:31:13.975251241+11:00","type":"message_added","session_id":"8d31cf1d-bf11-4eae-b439-cba2703d6971","assistant_message_empty":true,"has_tool_calls":true}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:31:13.975257142+11:00","type":"token_usage","session_id":"8d31cf1d-bf11-4eae-b439-cba2703d6971","usage":{"input_tokens":227,"output_tokens":36,"context_length":263,"context_limit":400000,"cost":0.0000904,"last_message":{"input_tokens":227,"output_tokens":36,"cached_input_tokens":0,"cached_write_tokens":0,"service_tier":"default","Cost":0.0000904,"Model":"github-copilot/gpt-5.4-nano","finish_reason":"tool_calls"}}}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:31:13.975383081+11:00","type":"hook_started","session_id":"8d31cf1d-bf11-4eae-b439-cba2703d6971","hook_event":"tool_input_transform"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:31:13.975566984+11:00","type":"hook_finished","session_id":"8d31cf1d-bf11-4eae-b439-cba2703d6971","hook_event":"tool_input_transform","duration_ms":0,"allowed":true}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:31:13.98335272+11:00","type":"tool_call","tool_call":{"id":"call_HCTHpXp4Ok5uvLCa2ZkGI5mp","type":"function","function":{"name":"shell","arguments":"{\"cmd\":\"sleep 4; printf replay-done \u003e replay-result.txt\",\"cwd\":null,\"timeout\":30}"}},"tool_definition":{"name":"shell","category":"shell","description":"Executes the given shell command with bash on Linux. If unsure which shell syntax to use, call get_environment_info first.","parameters":{"additionalProperties":false,"properties":{"cmd":{"description":"Shell command","type":"string"},"cwd":{"description":"Working directory (default \".\")","type":"string"},"timeout":{"description":"Timeout in seconds (default 30)","type":"integer"}},"required":["cmd"],"type":"object"},"annotations":{"idempotentHint":false,"readOnlyHint":false,"title":"Shell"},"outputSchema":{"type":"string"}}}
+
+data: {"timestamp":"0001-01-01T00:00:00Z","type":"session_title","session_id":"8d31cf1d-bf11-4eae-b439-cba2703d6971","title":"Run Snapshot and Event-Source Probe"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:31:17.98825156+11:00","type":"hook_started","session_id":"8d31cf1d-bf11-4eae-b439-cba2703d6971","hook_event":"tool_response_transform"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:31:17.988388822+11:00","type":"hook_finished","session_id":"8d31cf1d-bf11-4eae-b439-cba2703d6971","hook_event":"tool_response_transform","duration_ms":0,"allowed":true}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:31:17.988393612+11:00","type":"tool_call_response","tool_call_id":"call_HCTHpXp4Ok5uvLCa2ZkGI5mp","tool_definition":{"name":"shell","category":"shell","description":"Executes the given shell command with bash on Linux. If unsure which shell syntax to use, call get_environment_info first.","parameters":{"additionalProperties":false,"properties":{"cmd":{"description":"Shell command","type":"string"},"cwd":{"description":"Working directory (default \".\")","type":"string"},"timeout":{"description":"Timeout in seconds (default 30)","type":"integer"}},"required":["cmd"],"type":"object"},"annotations":{"idempotentHint":false,"readOnlyHint":false,"title":"Shell"},"outputSchema":{"type":"string"}},"response":"\u003cno output\u003e","result":{"output":"\u003cno output\u003e"}}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:31:17.988401142+11:00","type":"message_added","session_id":"8d31cf1d-bf11-4eae-b439-cba2703d6971"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:31:17.988667709+11:00","type":"mcp_init_started"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:31:17.988768033+11:00","type":"mcp_init_finished"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:31:17.98876833+11:00","type":"toolset_info","available_tools":1,"loading":false}
+
+data: {"timestamp":"2026-10-13T21:31:17.988771708+11:00","type":"agent_info","agent_name":"root","model":"github-copilot/gpt-5.4-nano","description":""}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:31:18.715662685+11:00","type":"agent_choice","content":"DONE","session_id":"8d31cf1d-bf11-4eae-b439-cba2703d6971","message_id":"0451efda-595f-47d6-97e8-54ef0b6d4de2"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:31:18.771386034+11:00","type":"message_added","session_id":"8d31cf1d-bf11-4eae-b439-cba2703d6971"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:31:18.771389542+11:00","type":"token_usage","session_id":"8d31cf1d-bf11-4eae-b439-cba2703d6971","usage":{"input_tokens":277,"output_tokens":5,"context_length":282,"context_limit":400000,"cost":0.00015205,"last_message":{"input_tokens":277,"output_tokens":5,"cached_input_tokens":0,"cached_write_tokens":0,"service_tier":"default","Cost":0.00006165000000000001,"Model":"github-copilot/gpt-5.4-nano","finish_reason":"stop"}}}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:31:18.771459862+11:00","type":"stream_stopped","session_id":"8d31cf1d-bf11-4eae-b439-cba2703d6971","reason":"normal","finish_reason":"stop"}
+

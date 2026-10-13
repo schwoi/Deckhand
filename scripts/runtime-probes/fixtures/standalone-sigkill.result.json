@@ -2,7 +2,7 @@
   "signal": "KILL",
   "launch_mode": "inherited",
   "signal_target": "plugin_pid",
-  "plugin_pgid": "165332",
-  "sleep_pid": "165946",
+  "plugin_pgid": "300217",
+  "sleep_pid": "300934",
   "descendant_survived": true
 }

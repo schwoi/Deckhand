@@ -1,62 +1,62 @@
-data: {"agent_name":"root","timestamp":"2026-10-13T20:24:16.109957229+11:00","type":"team_info","available_agents":[{"name":"root","description":"","provider":"github-copilot","model":"gpt-5.4-nano","thinking":"off","execution_capabilities":{"mode":"native","tool_execution":"docker-agent","tool_approval":"docker-agent-policy","budget_supported":true,"compaction_supported":true,"mid_turn_steering_supported":true,"prompt_hook_context_supported":true}}],"current_agent":"root"}
+data: {"agent_name":"root","timestamp":"2026-10-13T21:29:59.680185405+11:00","type":"team_info","available_agents":[{"name":"root","description":"","provider":"github-copilot","model":"gpt-5.4-nano","thinking":"off","execution_capabilities":{"mode":"native","tool_execution":"docker-agent","tool_approval":"docker-agent-policy","budget_supported":true,"compaction_supported":true,"mid_turn_steering_supported":true,"prompt_hook_context_supported":true}}],"current_agent":"root"}
 
-data: {"agent_name":"root","timestamp":"2026-10-13T20:24:16.109973163+11:00","type":"mcp_init_started"}
+data: {"agent_name":"root","timestamp":"2026-10-13T21:29:59.680201133+11:00","type":"mcp_init_started"}
 
-data: {"agent_name":"root","timestamp":"2026-10-13T20:24:16.110595342+11:00","type":"mcp_init_finished"}
+data: {"agent_name":"root","timestamp":"2026-10-13T21:29:59.680750222+11:00","type":"mcp_init_finished"}
 
-data: {"agent_name":"root","timestamp":"2026-10-13T20:24:16.110597127+11:00","type":"toolset_info","available_tools":1,"loading":false}
+data: {"agent_name":"root","timestamp":"2026-10-13T21:29:59.680753014+11:00","type":"toolset_info","available_tools":1,"loading":false}
 
-data: {"timestamp":"2026-10-13T20:24:16.110631712+11:00","type":"user_message","message":"Run the approval probe.","session_id":"a8396727-64f4-4648-80d2-dce52d9c8331","session_position":0}
+data: {"timestamp":"2026-10-13T21:29:59.68078226+11:00","type":"user_message","message":"Run the approval probe.","session_id":"aa89fc0e-ebaa-4ea9-b2d1-877e483a10e0","session_position":0}
 
-data: {"agent_name":"root","timestamp":"2026-10-13T20:24:16.110633289+11:00","type":"stream_started","session_id":"a8396727-64f4-4648-80d2-dce52d9c8331"}
+data: {"agent_name":"root","timestamp":"2026-10-13T21:29:59.680783291+11:00","type":"stream_started","session_id":"aa89fc0e-ebaa-4ea9-b2d1-877e483a10e0"}
 
-data: {"agent_name":"root","timestamp":"2026-10-13T20:24:16.110636485+11:00","type":"mcp_init_started"}
+data: {"agent_name":"root","timestamp":"2026-10-13T21:29:59.68078566+11:00","type":"mcp_init_started"}
 
-data: {"agent_name":"root","timestamp":"2026-10-13T20:24:16.110874114+11:00","type":"mcp_init_finished"}
+data: {"agent_name":"root","timestamp":"2026-10-13T21:29:59.680933564+11:00","type":"mcp_init_finished"}
 
-data: {"agent_name":"root","timestamp":"2026-10-13T20:24:16.110874564+11:00","type":"toolset_info","available_tools":1,"loading":false}
+data: {"agent_name":"root","timestamp":"2026-10-13T21:29:59.680933812+11:00","type":"toolset_info","available_tools":1,"loading":false}
 
-data: {"timestamp":"2026-10-13T20:24:16.110877814+11:00","type":"agent_info","agent_name":"root","model":"github-copilot/gpt-5.4-nano","description":""}
+data: {"timestamp":"2026-10-13T21:29:59.680936302+11:00","type":"agent_info","agent_name":"root","model":"github-copilot/gpt-5.4-nano","description":""}
 
-data: {"agent_name":"root","timestamp":"2026-10-13T20:24:17.295559439+11:00","type":"partial_tool_call","tool_call":{"id":"call_Ohf825npwPSybQQ3UTMF8Ecn","type":"function","function":{"name":"shell"}},"tool_definition":{"name":"shell","category":"shell","description":"Executes the given shell command with bash on Linux. If unsure which shell syntax to use, call get_environment_info first.","parameters":{"additionalProperties":false,"properties":{"cmd":{"description":"Shell command","type":"string"},"cwd":{"description":"Working directory (default \".\")","type":"string"},"timeout":{"description":"Timeout in seconds (default 30)","type":"integer"}},"required":["cmd"],"type":"object"},"annotations":{"idempotentHint":false,"readOnlyHint":false,"title":"Shell"},"outputSchema":{"type":"string"}}}
+data: {"agent_name":"root","timestamp":"2026-10-13T21:30:00.882490339+11:00","type":"partial_tool_call","tool_call":{"id":"call_TQJn4WQwuE3tB5e7XfJNQKXR","type":"function","function":{"name":"shell"}},"tool_definition":{"name":"shell","category":"shell","description":"Executes the given shell command with bash on Linux. If unsure which shell syntax to use, call get_environment_info first.","parameters":{"additionalProperties":false,"properties":{"cmd":{"description":"Shell command","type":"string"},"cwd":{"description":"Working directory (default \".\")","type":"string"},"timeout":{"description":"Timeout in seconds (default 30)","type":"integer"}},"required":["cmd"],"type":"object"},"annotations":{"idempotentHint":false,"readOnlyHint":false,"title":"Shell"},"outputSchema":{"type":"string"}}}
 
-data: {"agent_name":"root","timestamp":"2026-10-13T20:24:17.536012896+11:00","type":"partial_tool_call","tool_call":{"id":"call_Ohf825npwPSybQQ3UTMF8Ecn","type":"function","function":{"name":"shell","arguments":"{\"cmd\":\"printf approved \u003e approval-result.txt\",\"cwd\":null,\"timeout\":30}"}}}
+data: {"agent_name":"root","timestamp":"2026-10-13T21:30:01.098867731+11:00","type":"partial_tool_call","tool_call":{"id":"call_TQJn4WQwuE3tB5e7XfJNQKXR","type":"function","function":{"name":"shell","arguments":"{\"cmd\":\"printf approved \u003e approval-result.txt\",\"cwd\":null,\"timeout\":30}"}}}
 
-data: {"timestamp":"0001-01-01T00:00:00Z","type":"session_title","session_id":"a8396727-64f4-4648-80d2-dce52d9c8331","title":"Run Approval Probe"}
+data: {"agent_name":"root","timestamp":"2026-10-13T21:30:01.141511195+11:00","type":"message_added","session_id":"aa89fc0e-ebaa-4ea9-b2d1-877e483a10e0","assistant_message_empty":true,"has_tool_calls":true}
 
-data: {"agent_name":"root","timestamp":"2026-10-13T20:24:17.537994884+11:00","type":"message_added","session_id":"a8396727-64f4-4648-80d2-dce52d9c8331","assistant_message_empty":true,"has_tool_calls":true}
+data: {"agent_name":"root","timestamp":"2026-10-13T21:30:01.14151697+11:00","type":"token_usage","session_id":"aa89fc0e-ebaa-4ea9-b2d1-877e483a10e0","usage":{"input_tokens":218,"output_tokens":30,"context_length":248,"context_limit":400000,"cost":0.00008109999999999999,"last_message":{"input_tokens":218,"output_tokens":30,"cached_input_tokens":0,"cached_write_tokens":0,"service_tier":"default","Cost":0.00008109999999999999,"Model":"github-copilot/gpt-5.4-nano","finish_reason":"tool_calls"}}}
 
-data: {"agent_name":"root","timestamp":"2026-10-13T20:24:17.537999112+11:00","type":"token_usage","session_id":"a8396727-64f4-4648-80d2-dce52d9c8331","usage":{"input_tokens":218,"output_tokens":30,"context_length":248,"context_limit":400000,"cost":0.00008109999999999999,"last_message":{"input_tokens":218,"output_tokens":30,"cached_input_tokens":0,"cached_write_tokens":0,"service_tier":"default","Cost":0.00008109999999999999,"Model":"github-copilot/gpt-5.4-nano","finish_reason":"tool_calls"}}}
+data: {"agent_name":"root","timestamp":"2026-10-13T21:30:01.141582578+11:00","type":"hook_started","session_id":"aa89fc0e-ebaa-4ea9-b2d1-877e483a10e0","hook_event":"tool_input_transform"}
 
-data: {"agent_name":"root","timestamp":"2026-10-13T20:24:17.538069204+11:00","type":"hook_started","session_id":"a8396727-64f4-4648-80d2-dce52d9c8331","hook_event":"tool_input_transform"}
+data: {"agent_name":"root","timestamp":"2026-10-13T21:30:01.141711803+11:00","type":"hook_finished","session_id":"aa89fc0e-ebaa-4ea9-b2d1-877e483a10e0","hook_event":"tool_input_transform","duration_ms":0,"allowed":true}
 
-data: {"agent_name":"root","timestamp":"2026-10-13T20:24:17.538183155+11:00","type":"hook_finished","session_id":"a8396727-64f4-4648-80d2-dce52d9c8331","hook_event":"tool_input_transform","duration_ms":0,"allowed":true}
+data: {"agent_name":"root","timestamp":"2026-10-13T21:30:01.146917975+11:00","type":"tool_call_confirmation","tool_call":{"id":"call_TQJn4WQwuE3tB5e7XfJNQKXR","type":"function","function":{"name":"shell","arguments":"{\"cmd\":\"printf approved \u003e approval-result.txt\",\"cwd\":null,\"timeout\":30}"}},"tool_definition":{"name":"shell","category":"shell","description":"Executes the given shell command with bash on Linux. If unsure which shell syntax to use, call get_environment_info first.","parameters":{"additionalProperties":false,"properties":{"cmd":{"description":"Shell command","type":"string"},"cwd":{"description":"Working directory (default \".\")","type":"string"},"timeout":{"description":"Timeout in seconds (default 30)","type":"integer"}},"required":["cmd"],"type":"object"},"annotations":{"idempotentHint":false,"readOnlyHint":false,"title":"Shell"},"outputSchema":{"type":"string"}},"metadata":{"blast_radius":"medium","category":"fs-overwrite","reason":"Command matches destructive operation: \u003e \u003cfile\u003e","safety_label":"destructive"}}
 
-data: {"agent_name":"root","timestamp":"2026-10-13T20:24:17.543828189+11:00","type":"tool_call_confirmation","tool_call":{"id":"call_Ohf825npwPSybQQ3UTMF8Ecn","type":"function","function":{"name":"shell","arguments":"{\"cmd\":\"printf approved \u003e approval-result.txt\",\"cwd\":null,\"timeout\":30}"}},"tool_definition":{"name":"shell","category":"shell","description":"Executes the given shell command with bash on Linux. If unsure which shell syntax to use, call get_environment_info first.","parameters":{"additionalProperties":false,"properties":{"cmd":{"description":"Shell command","type":"string"},"cwd":{"description":"Working directory (default \".\")","type":"string"},"timeout":{"description":"Timeout in seconds (default 30)","type":"integer"}},"required":["cmd"],"type":"object"},"annotations":{"idempotentHint":false,"readOnlyHint":false,"title":"Shell"},"outputSchema":{"type":"string"}},"metadata":{"blast_radius":"medium","category":"fs-overwrite","reason":"Command matches destructive operation: \u003e \u003cfile\u003e","safety_label":"destructive"}}
+data: {"agent_name":"root","timestamp":"2026-10-13T21:30:01.201689522+11:00","type":"tool_call","tool_call":{"id":"call_TQJn4WQwuE3tB5e7XfJNQKXR","type":"function","function":{"name":"shell","arguments":"{\"cmd\":\"printf approved \u003e approval-result.txt\",\"cwd\":null,\"timeout\":30}"}},"tool_definition":{"name":"shell","category":"shell","description":"Executes the given shell command with bash on Linux. If unsure which shell syntax to use, call get_environment_info first.","parameters":{"additionalProperties":false,"properties":{"cmd":{"description":"Shell command","type":"string"},"cwd":{"description":"Working directory (default \".\")","type":"string"},"timeout":{"description":"Timeout in seconds (default 30)","type":"integer"}},"required":["cmd"],"type":"object"},"annotations":{"idempotentHint":false,"readOnlyHint":false,"title":"Shell"},"outputSchema":{"type":"string"}}}
 
-data: {"agent_name":"root","timestamp":"2026-10-13T20:24:17.624773899+11:00","type":"tool_call","tool_call":{"id":"call_Ohf825npwPSybQQ3UTMF8Ecn","type":"function","function":{"name":"shell","arguments":"{\"cmd\":\"printf approved \u003e approval-result.txt\",\"cwd\":null,\"timeout\":30}"}},"tool_definition":{"name":"shell","category":"shell","description":"Executes the given shell command with bash on Linux. If unsure which shell syntax to use, call get_environment_info first.","parameters":{"additionalProperties":false,"properties":{"cmd":{"description":"Shell command","type":"string"},"cwd":{"description":"Working directory (default \".\")","type":"string"},"timeout":{"description":"Timeout in seconds (default 30)","type":"integer"}},"required":["cmd"],"type":"object"},"annotations":{"idempotentHint":false,"readOnlyHint":false,"title":"Shell"},"outputSchema":{"type":"string"}}}
+data: {"agent_name":"root","timestamp":"2026-10-13T21:30:01.204526692+11:00","type":"hook_started","session_id":"aa89fc0e-ebaa-4ea9-b2d1-877e483a10e0","hook_event":"tool_response_transform"}
 
-data: {"agent_name":"root","timestamp":"2026-10-13T20:24:17.627062868+11:00","type":"hook_started","session_id":"a8396727-64f4-4648-80d2-dce52d9c8331","hook_event":"tool_response_transform"}
+data: {"agent_name":"root","timestamp":"2026-10-13T21:30:01.204648657+11:00","type":"hook_finished","session_id":"aa89fc0e-ebaa-4ea9-b2d1-877e483a10e0","hook_event":"tool_response_transform","duration_ms":0,"allowed":true}
 
-data: {"agent_name":"root","timestamp":"2026-10-13T20:24:17.627161697+11:00","type":"hook_finished","session_id":"a8396727-64f4-4648-80d2-dce52d9c8331","hook_event":"tool_response_transform","duration_ms":0,"allowed":true}
+data: {"agent_name":"root","timestamp":"2026-10-13T21:30:01.204651995+11:00","type":"tool_call_response","tool_call_id":"call_TQJn4WQwuE3tB5e7XfJNQKXR","tool_definition":{"name":"shell","category":"shell","description":"Executes the given shell command with bash on Linux. If unsure which shell syntax to use, call get_environment_info first.","parameters":{"additionalProperties":false,"properties":{"cmd":{"description":"Shell command","type":"string"},"cwd":{"description":"Working directory (default \".\")","type":"string"},"timeout":{"description":"Timeout in seconds (default 30)","type":"integer"}},"required":["cmd"],"type":"object"},"annotations":{"idempotentHint":false,"readOnlyHint":false,"title":"Shell"},"outputSchema":{"type":"string"}},"response":"\u003cno output\u003e","result":{"output":"\u003cno output\u003e"}}
 
-data: {"agent_name":"root","timestamp":"2026-10-13T20:24:17.62716508+11:00","type":"tool_call_response","tool_call_id":"call_Ohf825npwPSybQQ3UTMF8Ecn","tool_definition":{"name":"shell","category":"shell","description":"Executes the given shell command with bash on Linux. If unsure which shell syntax to use, call get_environment_info first.","parameters":{"additionalProperties":false,"properties":{"cmd":{"description":"Shell command","type":"string"},"cwd":{"description":"Working directory (default \".\")","type":"string"},"timeout":{"description":"Timeout in seconds (default 30)","type":"integer"}},"required":["cmd"],"type":"object"},"annotations":{"idempotentHint":false,"readOnlyHint":false,"title":"Shell"},"outputSchema":{"type":"string"}},"response":"\u003cno output\u003e","result":{"output":"\u003cno output\u003e"}}
+data: {"agent_name":"root","timestamp":"2026-10-13T21:30:01.204656202+11:00","type":"message_added","session_id":"aa89fc0e-ebaa-4ea9-b2d1-877e483a10e0"}
 
-data: {"agent_name":"root","timestamp":"2026-10-13T20:24:17.627169593+11:00","type":"message_added","session_id":"a8396727-64f4-4648-80d2-dce52d9c8331"}
+data: {"agent_name":"root","timestamp":"2026-10-13T21:30:01.204832029+11:00","type":"mcp_init_started"}
 
-data: {"agent_name":"root","timestamp":"2026-10-13T20:24:17.627377956+11:00","type":"mcp_init_started"}
+data: {"agent_name":"root","timestamp":"2026-10-13T21:30:01.204979209+11:00","type":"mcp_init_finished"}
 
-data: {"agent_name":"root","timestamp":"2026-10-13T20:24:17.627471871+11:00","type":"mcp_init_finished"}
+data: {"agent_name":"root","timestamp":"2026-10-13T21:30:01.204979666+11:00","type":"toolset_info","available_tools":1,"loading":false}
 
-data: {"agent_name":"root","timestamp":"2026-10-13T20:24:17.627472208+11:00","type":"toolset_info","available_tools":1,"loading":false}
+data: {"timestamp":"2026-10-13T21:30:01.204982879+11:00","type":"agent_info","agent_name":"root","model":"github-copilot/gpt-5.4-nano","description":""}
 
-data: {"timestamp":"2026-10-13T20:24:17.627474876+11:00","type":"agent_info","agent_name":"root","model":"github-copilot/gpt-5.4-nano","description":""}
+data: {"timestamp":"0001-01-01T00:00:00Z","type":"session_title","session_id":"aa89fc0e-ebaa-4ea9-b2d1-877e483a10e0","title":"Run the Approval Probe"}
 
-data: {"agent_name":"root","timestamp":"2026-10-13T20:24:18.338743287+11:00","type":"agent_choice","content":"DONE","session_id":"a8396727-64f4-4648-80d2-dce52d9c8331","message_id":"8c9bbc90-b238-49c3-b073-0ecadff608ed"}
+data: {"agent_name":"root","timestamp":"2026-10-13T21:30:02.482417693+11:00","type":"agent_choice","content":"DONE","session_id":"aa89fc0e-ebaa-4ea9-b2d1-877e483a10e0","message_id":"3a4ca4e8-1177-41c8-a163-da563a7b8c5c"}
 
-data: {"agent_name":"root","timestamp":"2026-10-13T20:24:18.394411243+11:00","type":"message_added","session_id":"a8396727-64f4-4648-80d2-dce52d9c8331"}
+data: {"agent_name":"root","timestamp":"2026-10-13T21:30:02.57845468+11:00","type":"message_added","session_id":"aa89fc0e-ebaa-4ea9-b2d1-877e483a10e0"}
 
-data: {"agent_name":"root","timestamp":"2026-10-13T20:24:18.394417159+11:00","type":"token_usage","session_id":"a8396727-64f4-4648-80d2-dce52d9c8331","usage":{"input_tokens":262,"output_tokens":5,"context_length":267,"context_limit":400000,"cost":0.00013975,"last_message":{"input_tokens":262,"output_tokens":5,"cached_input_tokens":0,"cached_write_tokens":0,"service_tier":"default","Cost":0.00005865,"Model":"github-copilot/gpt-5.4-nano","finish_reason":"stop"}}}
+data: {"agent_name":"root","timestamp":"2026-10-13T21:30:02.578457978+11:00","type":"token_usage","session_id":"aa89fc0e-ebaa-4ea9-b2d1-877e483a10e0","usage":{"input_tokens":262,"output_tokens":5,"context_length":267,"context_limit":400000,"cost":0.00013975,"last_message":{"input_tokens":262,"output_tokens":5,"cached_input_tokens":0,"cached_write_tokens":0,"service_tier":"default","Cost":0.00005865,"Model":"github-copilot/gpt-5.4-nano","finish_reason":"stop"}}}
 
-data: {"agent_name":"root","timestamp":"2026-10-13T20:24:18.394465198+11:00","type":"stream_stopped","session_id":"a8396727-64f4-4648-80d2-dce52d9c8331","reason":"normal","finish_reason":"stop"}
+data: {"agent_name":"root","timestamp":"2026-10-13T21:30:02.578515116+11:00","type":"stream_stopped","session_id":"aa89fc0e-ebaa-4ea9-b2d1-877e483a10e0","reason":"normal","finish_reason":"stop"}
 
