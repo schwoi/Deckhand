@@ -76,6 +76,7 @@ export const DIAGNOSTIC_SHORT: Record<DiagnosticCode, string> = {
   duplicate: 'listed twice',
   cycle: 'in a cycle',
   'force-handoff-cycle': 'forced loop',
+  'name-conflict': 'name clash',
   unreachable: 'unreachable',
   issue: 'invalid',
 }

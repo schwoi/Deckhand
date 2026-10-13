@@ -23,12 +23,25 @@ import { Button } from '../components/ui/Button'
 import { Input, Select } from '../components/ui/form'
 import { EmptyState, Tabs } from '../components/ui/misc'
 import { cn } from '../lib/util'
-import { TopologyCanvas } from './TopologyCanvas'
+import { TopologyCanvas, type Viewport } from './TopologyCanvas'
 import { TopologyList } from './TopologyList'
 import { AddAgentDialog, AddRelationDialog, NodePanel } from './TopologyPanel'
 import { onListNavKey } from './TopologyRows'
 import { revealField } from './reveal'
 import { type VisualEdge, layoutGraph, structureKey } from './topologyLayout'
+
+/**
+ * View state that outlives the section: the editor keeps one per file so switching to another
+ * section and back restores the selection, open panel, mode, entry choice and viewport.
+ */
+export interface TopologyMemory {
+  view?: 'graph' | 'list'
+  entry?: string
+  query?: string
+  selection?: Selection | null
+  focus?: boolean
+  viewport?: Viewport
+}
 
 interface Selection {
   node: string
@@ -47,6 +60,7 @@ export function TopologySection({
   stale,
   onGoToYaml,
   onSelectAgent,
+  memory,
 }: {
   config: AgentFile
   onChange: (c: AgentFile) => void
@@ -55,13 +69,17 @@ export function TopologySection({
   onGoToYaml: () => void
   /** keeps the Agents section on the agent last opened here */
   onSelectAgent: (name: string) => void
+  memory: TopologyMemory
 }) {
   const readOnly = stale
-  const [view, setView] = useState<'graph' | 'list'>('graph')
-  const [entry, setEntry] = useState<string>()
-  const [query, setQuery] = useState('')
-  const [selection, setSelection] = useState<Selection | null>(null)
-  const [focus, setFocus] = useState(false)
+  const [view, setView] = useState(memory.view ?? 'graph')
+  const [entry, setEntry] = useState(memory.entry)
+  const [query, setQuery] = useState(memory.query ?? '')
+  const [selection, setSelection] = useState(memory.selection ?? null)
+  const [focus, setFocus] = useState(memory.focus ?? false)
+  useEffect(() => {
+    Object.assign(memory, { view, entry, query, selection, focus })
+  }, [memory, view, entry, query, selection, focus])
   const [diagOpen, setDiagOpen] = useState(false)
   const [adding, setAdding] = useState<{ from?: string } | null>(null)
   const [addingAgent, setAddingAgent] = useState(false)
@@ -321,6 +339,7 @@ export function TopologySection({
               onSelectNode={selectNode}
               onSelectEdge={selectEdge}
               onClear={clear}
+              memory={memory}
             />
           ) : (
             <TopologyList

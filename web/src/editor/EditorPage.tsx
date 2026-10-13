@@ -12,7 +12,7 @@ import {
   TriangleAlert,
   Upload,
 } from 'lucide-react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { YAMLParseError, parse, stringify } from 'yaml'
 import { api, errorText } from '../api'
 import { Button } from '../components/ui/Button'
@@ -28,7 +28,7 @@ import { McpsSection } from './McpsSection'
 import { MetadataSection } from './MetadataSection'
 import { ModelsSection } from './ModelsSection'
 import { PermissionsSection } from './PermissionsSection'
-import { TopologySection } from './TopologySection'
+import { type TopologyMemory, TopologySection } from './TopologySection'
 import { type ParseError, YamlEditor } from './YamlEditor'
 import { SECTIONS, type SectionId, sectionForPath } from './catalog'
 import { DoctorDialog, PushDialog } from './dialogs'
@@ -70,6 +70,9 @@ export function EditorPage({ name }: { name: string }) {
   const validated = useRef('')
   const runtime = useRuntime()
   const sectionNav = useRef<HTMLElement>(null)
+  // topology view state survives section switches; a fresh one per file
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reset when the file changes
+  const topologyMemory = useMemo<TopologyMemory>(() => ({}), [name])
 
   // keep the active section visible in the horizontally scrolling strip (below lg)
   // biome-ignore lint/correctness/useExhaustiveDependencies: re-run when the section changes
@@ -485,6 +488,7 @@ export function EditorPage({ name }: { name: string }) {
               stale={!!parseError}
               onGoToYaml={() => setSection('yaml')}
               onSelectAgent={setAgent}
+              memory={topologyMemory}
             />
           ) : (
             <div className="h-full overflow-y-auto">

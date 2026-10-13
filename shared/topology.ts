@@ -4,10 +4,10 @@
 
 import {
   RELATIONS,
-  RELATION_KINDS,
   type RelationKind,
   parseAgentRef,
-  relationTargets,
+  relationEntries,
+  relationProblems,
 } from './agent-refs'
 import type { ValidationIssue } from './api'
 
@@ -49,6 +49,7 @@ export type DiagnosticCode =
   | 'duplicate'
   | 'cycle'
   | 'force-handoff-cycle'
+  | 'name-conflict'
   | 'unreachable'
   | 'issue'
 
@@ -142,63 +143,72 @@ export function projectTopology(config: unknown, opts: { entry?: string } = {}):
     return node
   }
 
-  for (const from of names) {
-    for (const kind of RELATION_KINDS) {
-      const { field, verb } = RELATIONS[kind]
-      const raw = isObj(agents[from]) ? (agents[from] as Obj)[field] : undefined
-      // [target, YAML path]; list indices refer to the original list, which may hold non-strings
-      const entries: [string, string][] =
-        kind === 'force_handoff'
-          ? relationTargets(agents[from], kind).map((ref) => [ref, `agents.${from}.${field}`])
-          : Array.isArray(raw)
-            ? raw.flatMap((ref, i): [string, string][] =>
-                typeof ref === 'string' ? [[ref, `agents.${from}.${field}.${i}`]] : [],
-              )
-            : []
-      for (const [ref, path] of entries) {
-        const id = edgeId(kind, from, ref)
-        const at = { nodes: [agentId(from)], edges: [id], path }
-        if (edgeIds.has(id)) {
-          diagnostics.push({
-            ...at,
-            severity: 'warning',
-            code: 'duplicate',
-            message: `${ref} is listed more than once in ${from}'s ${field}.`,
-          })
-          continue
-        }
-        edgeIds.add(id)
-        const target = targetNode(ref, path)
-        edges.push({ id, kind, source: agentId(from), target: target.id, from, ref, path })
-        if (target.kind === 'missing')
-          diagnostics.push({
-            ...at,
-            nodes: [target.id],
-            severity: 'error',
-            code: 'unresolved-target',
-            message: `${from} ${verb} ${ref}, which is not an agent in this file.`,
-          })
-        if (ref === from)
-          diagnostics.push(
-            kind === 'force_handoff'
-              ? {
-                  ...at,
-                  severity: 'error',
-                  code: 'self-link',
-                  message: `${from} cannot force a handoff to itself; Docker Agent rejects this.`,
-                }
-              : {
-                  ...at,
-                  severity: 'warning',
-                  code: 'self-link',
-                  message: `${from} ${verb} itself. This is allowed, but rarely intended.`,
-                },
-          )
-      }
+  for (const { from, kind, ref, path } of relationEntries(agents)) {
+    const { field, verb } = RELATIONS[kind]
+    const id = edgeId(kind, from, ref)
+    const at = { nodes: [agentId(from)], edges: [id], path }
+    if (edgeIds.has(id)) {
+      diagnostics.push({
+        ...at,
+        severity: 'warning',
+        code: 'duplicate',
+        message: `${ref} is listed more than once in ${from}'s ${field}.`,
+      })
+      continue
+    }
+    edgeIds.add(id)
+    const target = targetNode(ref, path)
+    edges.push({ id, kind, source: agentId(from), target: target.id, from, ref, path })
+    // a forced self-handoff is a load error, reported with the other runtime rules below
+    if (ref === from && kind !== 'force_handoff')
+      diagnostics.push({
+        ...at,
+        severity: 'warning',
+        code: 'self-link',
+        message: `${from} ${verb} itself. This is allowed, but rarely intended.`,
+      })
+  }
+
+  // load errors from the rules shared with the server validator; duplicates are reported once
+  const edgeAt = new Map(edges.map((e) => [e.path, e]))
+  for (const p of relationProblems(agents)) {
+    const e = edgeAt.get(p.entry.path)
+    if (!e) continue
+    const { verb } = RELATIONS[e.kind]
+    const base = { severity: 'error' as const, path: e.path, nodes: [e.source], edges: [e.id] }
+    if (p.code === 'unknown-agent')
+      diagnostics.push({
+        ...base,
+        nodes: [e.target],
+        code: 'unresolved-target',
+        message: `${e.from} ${verb} ${e.ref}, which is not an agent in this file.`,
+      })
+    else if (p.code === 'force-self')
+      diagnostics.push({
+        ...base,
+        code: 'self-link',
+        message: `${e.from} cannot force a handoff to itself; Docker Agent rejects this.`,
+      })
+    else if (p.code === 'name-conflict')
+      diagnostics.push({
+        ...base,
+        nodes: [e.source, e.target, agentId(p.name)],
+        code: 'name-conflict',
+        message: `${e.ref} is named ${p.name}, like the local agent ${p.name}; Docker Agent refuses to load a team with this clash. Give it another name with name:reference.`,
+      })
+    else {
+      const loop = p.loop.flatMap((l) => edgeAt.get(l.path) ?? [])
+      diagnostics.push({
+        ...base,
+        nodes: loop.map((l) => l.source),
+        edges: loop.map((l) => l.id),
+        code: 'force-handoff-cycle',
+        message: `Forced handoffs loop (${[...p.loop.map((l) => l.from), p.entry.from].join(' → ')}); Docker Agent rejects force_handoff cycles.`,
+      })
     }
   }
 
-  diagnostics.push(...forceHandoffCycles(edges), ...cycles(nodes, edges))
+  diagnostics.push(...cycles(nodes, edges))
 
   if (entry) {
     const reached = reachable(agentId(entry), edges)
@@ -236,38 +246,6 @@ function adjacency(edges: TopologyEdge[]): Map<string, TopologyEdge[]> {
     const list = out.get(e.source)
     if (list) list.push(e)
     else out.set(e.source, [e])
-  }
-  return out
-}
-
-/** Each agent has at most one forced handoff, so following them either ends or loops. */
-function forceHandoffCycles(edges: TopologyEdge[]): TopologyDiagnostic[] {
-  const next = new Map<string, TopologyEdge>()
-  for (const e of edges)
-    if (e.kind === 'force_handoff' && e.source !== e.target) next.set(e.source, e)
-  const done = new Set<string>()
-  const out: TopologyDiagnostic[] = []
-  for (const start of next.keys()) {
-    const trail: string[] = []
-    let id: string | undefined = start
-    while (id && !done.has(id) && !trail.includes(id)) {
-      trail.push(id)
-      id = next.get(id)?.target
-    }
-    if (id && trail.includes(id)) {
-      const loop = trail.slice(trail.indexOf(id))
-      const loopEdges = loop.map((n) => next.get(n)).filter((e): e is TopologyEdge => !!e)
-      const chain = [...loopEdges.map((e) => e.from), loopEdges[0]?.from].join(' → ')
-      out.push({
-        severity: 'error',
-        code: 'force-handoff-cycle',
-        message: `Forced handoffs loop (${chain}); Docker Agent rejects force_handoff cycles.`,
-        path: loopEdges[0]?.path ?? '',
-        nodes: loop,
-        edges: loopEdges.map((e) => e.id),
-      })
-    }
-    for (const n of trail) done.add(n)
   }
   return out
 }

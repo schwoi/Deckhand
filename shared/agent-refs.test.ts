@@ -1,6 +1,15 @@
 import { describe, expect, test } from 'bun:test'
 import { parse, stringify } from 'yaml'
-import { addRelation, parseAgentRef, removeAgent, removeRelation, renameAgent } from './agent-refs'
+import {
+  addRelation,
+  parseAgentRef,
+  relationEntries,
+  relationProblemMessage,
+  relationProblems,
+  removeAgent,
+  removeRelation,
+  renameAgent,
+} from './agent-refs'
 import type { AgentFile } from './config'
 
 const yaml = `
@@ -156,8 +165,54 @@ describe('parseAgentRef', () => {
     })
     expect(parseAgentRef('https://example.com/agents/pirate.yaml')).toEqual({
       kind: 'external',
-      name: 'pirate.yaml',
+      name: 'pirate',
       reference: 'https://example.com/agents/pirate.yaml',
     })
+  })
+})
+
+describe('relationProblems', () => {
+  const problems = (agents: Record<string, unknown>) =>
+    relationProblems(agents).map((p) => [p.code, p.entry.path])
+
+  test('flags external references whose resolved name clashes with a local agent', () => {
+    expect(
+      problems({
+        root: {
+          force_handoff: 'root:myorg/reviewer',
+          sub_agents: ['myorg/helper:v1', 'other:myorg/helper', 'https://x.test/a/helper.yaml'],
+          handoffs: ['helper:myorg/x'],
+        },
+        helper: {},
+      }),
+    ).toEqual([
+      ['name-conflict', 'agents.root.sub_agents.0'],
+      ['name-conflict', 'agents.root.sub_agents.2'],
+      ['name-conflict', 'agents.root.handoffs.0'],
+      ['name-conflict', 'agents.root.force_handoff'],
+    ])
+  })
+
+  test('treats an empty force_handoff as unset and skips wrong shapes without throwing', () => {
+    const agents = { a: { force_handoff: '', sub_agents: 'worker', handoffs: [1, null] }, b: null }
+    expect(relationEntries(agents)).toEqual([])
+    expect(problems(agents)).toEqual([])
+    expect(problems({ a: { force_handoff: 5 } })).toEqual([])
+  })
+
+  test('reports unknown targets, forced self-handoffs and each forced loop once', () => {
+    const p = relationProblems({
+      a: { force_handoff: 'b', sub_agents: ['ghost'] },
+      b: { force_handoff: 'c' },
+      c: { force_handoff: 'a' },
+      d: { force_handoff: 'd' },
+    })
+    expect(p.map((x) => [x.code, x.entry.path])).toEqual([
+      ['unknown-agent', 'agents.a.sub_agents.0'],
+      ['force-self', 'agents.d.force_handoff'],
+      ['force-cycle', 'agents.a.force_handoff'],
+    ])
+    const loop = p.find((x) => x.code === 'force-cycle')
+    expect(loop && relationProblemMessage(loop)).toBe('force_handoff cycle: a → b → c → a')
   })
 })

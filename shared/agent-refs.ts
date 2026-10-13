@@ -52,7 +52,11 @@ export function parseAgentRef(raw: string): AgentRef {
         .replace(/\/+$/, '')
         .split('/')
         .pop() ?? ''
-    name = segment.replace(/@.*$/, '').replace(/:[^:]*$/, '') || reference
+    // the runtime names `https://…/helper.yaml` "helper", and `org/helper:v1@sha256:…` "helper"
+    const bare = URL_RE.test(reference)
+      ? segment.replace(/\.ya?ml$/i, '')
+      : segment.replace(/@.*$/, '').replace(/:[^:]*$/, '')
+    name = bare || reference
   }
   return { kind: 'external', name, reference }
 }
@@ -136,10 +140,107 @@ export function removeAgent(config: AgentFile, name: string): AgentFile {
 
 /** Targets of one relationship kind as written (force_handoff is a single target). */
 export function relationTargets(agent: unknown, kind: RelationKind): string[] {
-  if (!isObj(agent)) return []
-  const v = agent[RELATIONS[kind].field]
-  if (kind === 'force_handoff') return typeof v === 'string' && v ? [v] : []
-  return Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : []
+  return relationEntries({ a: agent })
+    .filter((e) => e.kind === kind)
+    .map((e) => e.ref)
+}
+
+/** One configured relationship as written, with its YAML path. */
+export interface RelationEntry {
+  from: string
+  kind: RelationKind
+  ref: string
+  path: string
+}
+
+/**
+ * Every string relationship entry in file order. Wrong shapes (a string where a list belongs,
+ * numbers in lists) are skipped here and left to schema validation; an empty force_handoff is
+ * unset, as in Docker Agent.
+ */
+export function relationEntries(agents: Record<string, unknown>): RelationEntry[] {
+  const out: RelationEntry[] = []
+  for (const [from, agent] of Object.entries(agents)) {
+    if (!isObj(agent)) continue
+    for (const kind of RELATION_KINDS) {
+      const { field } = RELATIONS[kind]
+      const v = agent[field]
+      if (kind === 'force_handoff') {
+        if (typeof v === 'string' && v)
+          out.push({ from, kind, ref: v, path: `agents.${from}.${field}` })
+      } else if (Array.isArray(v))
+        v.forEach((ref, i) => {
+          if (typeof ref === 'string')
+            out.push({ from, kind, ref, path: `agents.${from}.${field}.${i}` })
+        })
+    }
+  }
+  return out
+}
+
+export type RelationProblem =
+  | { code: 'unknown-agent'; entry: RelationEntry }
+  | { code: 'force-self'; entry: RelationEntry }
+  /** an external reference whose resolved name is also a local agent's name */
+  | { code: 'name-conflict'; entry: RelationEntry; name: string }
+  /** forced handoffs that lead back to their start; `loop` is in chain order */
+  | { code: 'force-cycle'; entry: RelationEntry; loop: RelationEntry[] }
+
+/**
+ * Relationship rules Docker Agent enforces when loading a team (verified against v1.150.0).
+ * Shared by the server validator and the topology projection so they cannot disagree.
+ */
+export function relationProblems(agents: Record<string, unknown>): RelationProblem[] {
+  const entries = relationEntries(agents)
+  const problems: RelationProblem[] = []
+  for (const entry of entries) {
+    const ref = parseAgentRef(entry.ref)
+    if (ref.kind === 'external') {
+      if (Object.hasOwn(agents, ref.name))
+        problems.push({ code: 'name-conflict', entry, name: ref.name })
+    } else if (!Object.hasOwn(agents, ref.name)) problems.push({ code: 'unknown-agent', entry })
+    else if (entry.kind === 'force_handoff' && ref.name === entry.from)
+      problems.push({ code: 'force-self', entry })
+  }
+
+  // each agent has at most one forced handoff, so following them either ends or loops
+  const forced = new Map<string, RelationEntry>()
+  for (const e of entries)
+    if (e.kind === 'force_handoff' && e.ref !== e.from && Object.hasOwn(agents, e.ref))
+      forced.set(e.from, e)
+  const done = new Set<string>()
+  for (const start of forced.keys()) {
+    const trail: string[] = []
+    let at: string | undefined = start
+    while (at !== undefined && !done.has(at) && !trail.includes(at)) {
+      trail.push(at)
+      at = forced.get(at)?.ref
+    }
+    if (at !== undefined && trail.includes(at)) {
+      const loop = trail
+        .slice(trail.indexOf(at))
+        .map((n) => forced.get(n))
+        .filter((e): e is RelationEntry => !!e)
+      if (loop[0]) problems.push({ code: 'force-cycle', entry: loop[0], loop })
+    }
+    for (const n of trail) done.add(n)
+  }
+  return problems
+}
+
+/** Validator wording for a relationship problem. */
+export function relationProblemMessage(p: RelationProblem): string {
+  const { field } = RELATIONS[p.entry.kind]
+  switch (p.code) {
+    case 'unknown-agent':
+      return `unknown agent: ${p.entry.ref}`
+    case 'force-self':
+      return 'cannot force_handoff to itself'
+    case 'name-conflict':
+      return `external ${field} entry ${p.entry.ref} resolves to the name ${p.name}, which conflicts with a local agent`
+    case 'force-cycle':
+      return `force_handoff cycle: ${[...p.loop.map((e) => e.from), p.entry.from].join(' → ')}`
+  }
 }
 
 function updateAgent(

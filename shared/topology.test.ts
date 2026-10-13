@@ -126,6 +126,27 @@ describe('projectTopology', () => {
   })
 })
 
+describe('runtime load rules', () => {
+  test('marks external references that clash with a local agent name', () => {
+    const t = projectTopology({ agents: { root: { force_handoff: 'root:myorg/reviewer' } } })
+    expect(t.diagnostics.map((d) => [d.code, d.severity, d.path])).toEqual([
+      ['name-conflict', 'error', 'agents.root.force_handoff'],
+    ])
+    expect(t.diagnostics[0]?.nodes).toContain('agent:root')
+  })
+
+  test('survives schema-invalid relationship shapes', () => {
+    const t = projectTopology({
+      agents: {
+        a: { sub_agents: 'worker', handoffs: { x: 1 }, force_handoff: 5 },
+        b: { force_handoff: '' },
+      },
+    })
+    expect(t.edges).toEqual([])
+    expect(t.diagnostics.map((d) => d.code)).toEqual(['unreachable'])
+  })
+})
+
 describe('validation issues', () => {
   const t = projectTopology(team)
 

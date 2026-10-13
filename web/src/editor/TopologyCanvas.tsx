@@ -41,7 +41,7 @@ import {
   severityById,
 } from './topologyStyle'
 
-interface View {
+export interface Viewport {
   x: number
   y: number
   k: number
@@ -63,6 +63,7 @@ export function TopologyCanvas({
   onSelectNode,
   onSelectEdge,
   onClear,
+  memory,
 }: {
   topology: Topology
   layout: GraphLayout
@@ -77,10 +78,16 @@ export function TopologyCanvas({
   onSelectNode: (id: string) => void
   onSelectEdge: (edge: VisualEdge) => void
   onClear: () => void
+  /** survives remounts; the canvas stores its viewport here */
+  memory: { viewport?: Viewport }
 }) {
   const viewport = useRef<HTMLDivElement>(null)
-  const [view, setView] = useState<View>({ x: 0, y: 0, k: 1 })
-  const fitted = useRef(false)
+  // restore the last pan/zoom (kept by the editor across section switches), else fit once
+  const [view, setView] = useState<Viewport>(() => memory.viewport ?? { x: 0, y: 0, k: 1 })
+  const fitted = useRef(!!memory.viewport)
+  useEffect(() => {
+    memory.viewport = view
+  }, [memory, view])
 
   const neighborhood = useMemo(() => {
     if (!selected) return null
@@ -157,8 +164,12 @@ export function TopologyCanvas({
   )
 
   // focus mode frames the selection and its neighbours; otherwise bring the selection into view
+  // (only on real changes: a restored viewport already shows the restored selection)
+  const shown = useRef(memory.viewport ? { selected, focus } : { selected: null, focus: false })
   // biome-ignore lint/correctness/useExhaustiveDependencies: only react to selection/focus changes
   useEffect(() => {
+    if (shown.current.selected === selected && shown.current.focus === focus) return
+    shown.current = { selected, focus }
     if (!selected) return
     if (focus && neighborhood) fitTo(neighborhood)
     else ensureVisible(selected)
