@@ -41,7 +41,6 @@ session_id=$(new_session "$WORK_DIR" | jq -r .id)
 stream_turn "$session_id" surface-probe 'Run the active cancellation probe.' "$PROBE_ROOT/active.sse" &
 stream_pid=$!
 for _ in $(seq 1 600); do
-  shell_pid=$(pstree -p "$RUNTIME_PID" | rg -o 'bash\([0-9]+' | rg -o '[0-9]+' | head -1 || true)
   sleep_pid=$(pstree -p "$RUNTIME_PID" | rg -o 'sleep\([0-9]+' | rg -o '[0-9]+' | head -1 || true)
   [[ -n "${sleep_pid:-}" ]] && break
   sleep 0.1

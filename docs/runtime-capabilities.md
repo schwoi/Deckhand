@@ -143,7 +143,7 @@ identities and perform bounded explicit cleanup. Fixtures: `standalone-*` and
 mode, snapshots descendants, sends inherited signals to PIDs rather than an
 unrelated process group, and bounds TERM and KILL phases. `10-cleanup-bounds.sh`
 interrupted an inherited-runtime probe during a real shell call; it exited 143
-in 1 second with no recorded survivor (`cleanup-bounds.json`).
+in 3 seconds (bound: 12) with no recorded survivor (`cleanup-bounds.json`).
 
 ## 7. Snapshot and replay recovery
 
