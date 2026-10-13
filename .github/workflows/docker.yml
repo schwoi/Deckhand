@@ -23,12 +23,17 @@ jobs:
           fetch-depth: 0
 
       # yyyy.MM.dd.Rev — Rev counts releases on that UTC day, taken from existing git tags.
-      - name: Compute version
+      # The tag is pushed before the image so a version can never be published twice; a failed
+      # build just leaves a gap in the revisions.
+      - name: Reserve version
         id: version
         run: |
           day=$(date -u +%Y.%m.%d)
           last=$(git tag -l "$day.*" | sed "s/^$day\.//" | sort -n | tail -1)
-          echo "version=$day.$(( ${last:-0} + 1 ))" >> "$GITHUB_OUTPUT"
+          version="$day.$(( ${last:-0} + 1 ))"
+          git tag "$version"
+          git push origin "$version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
 
       - uses: docker/setup-qemu-action@v3
       - uses: docker/setup-buildx-action@v3
@@ -58,8 +63,3 @@ jobs:
           annotations: ${{ steps.meta.outputs.annotations }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-      - name: Tag release
-        run: |
-          git tag "${{ steps.version.outputs.version }}"
-          git push origin "${{ steps.version.outputs.version }}"
