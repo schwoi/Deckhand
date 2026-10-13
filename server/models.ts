@@ -90,16 +90,18 @@ async function openaiCompatible(baseUrl: string, token: string | undefined): Pro
 }
 
 async function fetchModels(provider: string, baseUrl?: string, tokenKey?: string) {
+  // A model's token_key replaces the provider's default variable, as it does in docker-agent.
+  const key = (...defaults: string[]) => need(...(tokenKey ? [tokenKey] : defaults))
   if (baseUrl) {
     const url = baseUrl.replace(/\$\{(\w+)\}/g, (_, n: string) => lookupSecret(n) ?? '')
     if (!/^https?:\/\//i.test(url)) throw new Unavailable('base_url is not an http(s) URL')
-    return openaiCompatible(url, tokenKey ? need(tokenKey) : undefined)
+    return openaiCompatible(url, tokenKey ? key() : undefined)
   }
   switch (provider) {
     case 'anthropic': {
       const r = await getJson<{ data?: { id?: string }[] }>(
         'https://api.anthropic.com/v1/models?limit=1000',
-        { 'x-api-key': need('ANTHROPIC_API_KEY'), 'anthropic-version': '2023-06-01' },
+        { 'x-api-key': key('ANTHROPIC_API_KEY'), 'anthropic-version': '2023-06-01' },
       )
       return sorted((r.data ?? []).map((m) => m.id))
     }
@@ -107,7 +109,7 @@ async function fetchModels(provider: string, baseUrl?: string, tokenKey?: string
       const r = await getJson<{
         models?: { name?: string; supportedGenerationMethods?: string[] }[]
       }>('https://generativelanguage.googleapis.com/v1beta/models?pageSize=1000', {
-        'x-goog-api-key': need('GOOGLE_API_KEY', 'GEMINI_API_KEY'),
+        'x-goog-api-key': key('GOOGLE_API_KEY', 'GEMINI_API_KEY'),
       })
       return sorted(
         (r.models ?? [])
@@ -120,7 +122,7 @@ async function fetchModels(provider: string, baseUrl?: string, tokenKey?: string
       const r = await getJson<{
         data?: { id?: string; model_picker_enabled?: boolean; policy?: { state?: string } }[]
       }>('https://api.githubcopilot.com/models', {
-        authorization: `Bearer ${need('GITHUB_TOKEN', 'GH_TOKEN')}`,
+        authorization: `Bearer ${key('GITHUB_TOKEN', 'GH_TOKEN')}`,
         'copilot-integration-id': 'copilot-developer-cli',
       })
       // model_picker_enabled is what Copilot's own clients offer; the rest are retired
@@ -149,7 +151,8 @@ async function fetchModels(provider: string, baseUrl?: string, tokenKey?: string
   }
   const alias = OPENAI_COMPATIBLE[provider]
   if (!alias) throw new Unavailable(`${provider} has no model list Deckhand can query`)
-  return openaiCompatible(alias.baseUrl, alias.tokenKey ? need(alias.tokenKey) : undefined)
+  const aliasKey = tokenKey ?? alias.tokenKey
+  return openaiCompatible(alias.baseUrl, aliasKey ? key(aliasKey) : undefined)
 }
 
 const cache = ttlCache<string[]>(5 * 60_000)

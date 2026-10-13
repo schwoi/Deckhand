@@ -1,17 +1,23 @@
 import type { DoctorReport, LiveModels, ModelInfo } from '@shared/api'
 import { useEffect, useState } from 'react'
-import { api, errorText } from '../api'
+import { api, apiEnvironment, errorText } from '../api'
 
-let catalog: Promise<ModelInfo[]> | null = null
+// Caches are per environment: each one is a different machine with its own CLI and credentials.
+const catalogs = new Map<string, Promise<ModelInfo[]>>()
 
-/** All known models (docker agent models --all), fetched once per page load. */
+/** All known models (docker agent models --all), fetched once per page load and environment. */
 export function useModelCatalog(): ModelInfo[] {
   const [models, setModels] = useState<ModelInfo[]>([])
   useEffect(() => {
-    catalog ??= api.system.models(true).catch(() => {
-      catalog = null
-      return []
-    })
+    const env = apiEnvironment()
+    let catalog = catalogs.get(env)
+    if (!catalog) {
+      catalog = api.system.models(true).catch(() => {
+        catalogs.delete(env)
+        return []
+      })
+      catalogs.set(env, catalog)
+    }
     let live = true
     catalog.then((m) => live && setModels(m))
     return () => {
@@ -21,21 +27,41 @@ export function useModelCatalog(): ModelInfo[] {
   return models
 }
 
-let doctor: { at: number; report: Promise<DoctorReport | null> } | null = null
+const doctors = new Map<string, { at: number; report: Promise<DoctorReport | null> }>()
+
+/** Forget doctor reports, e.g. after credentials change. */
+export function invalidateDoctor(): void {
+  doctors.clear()
+}
+
+function doctorReport(): Promise<DoctorReport | null> {
+  const env = apiEnvironment()
+  const hit = doctors.get(env)
+  if (hit && Date.now() - hit.at < 30_000) return hit.report
+  const report = api.system.doctor().catch(() => null)
+  doctors.set(env, { at: Date.now(), report })
+  return report
+}
 
 /**
- * docker agent doctor: which providers have credentials and the auto model. Shared for 30s so
- * every model entry doesn't run it, yet a key added on the System page shows up soon after.
+ * docker agent doctor: which providers have credentials and the auto model. Shared briefly so
+ * every model entry doesn't run it; re-checked when the tab regains focus, so a key added on
+ * the System page or in another tab shows up.
  */
 export function useDoctor(): DoctorReport | null {
   const [report, setReport] = useState<DoctorReport | null>(null)
   useEffect(() => {
-    if (!doctor || Date.now() - doctor.at > 30_000)
-      doctor = { at: Date.now(), report: api.system.doctor().catch(() => null) }
     let live = true
-    doctor.report.then((r) => live && setReport(r))
+    const load = () => {
+      if (document.visibilityState === 'visible') doctorReport().then((r) => live && setReport(r))
+    }
+    load()
+    window.addEventListener('focus', load)
+    document.addEventListener('visibilitychange', load)
     return () => {
       live = false
+      window.removeEventListener('focus', load)
+      document.removeEventListener('visibilitychange', load)
     }
   }, [])
   return report
@@ -52,7 +78,9 @@ export interface LiveQuery {
  * minutes). Debounced, since the provider is often being typed. `null` while loading.
  */
 export function useLiveModels(q: LiveQuery | null): LiveModels | null {
-  const key = q?.provider ? JSON.stringify([q.provider, q.base_url, q.token_key]) : ''
+  const key = q?.provider
+    ? JSON.stringify([apiEnvironment(), q.provider, q.base_url, q.token_key])
+    : ''
   const [result, setResult] = useState<{ key: string; value: LiveModels } | null>(null)
   // biome-ignore lint/correctness/useExhaustiveDependencies: key captures q
   useEffect(() => {

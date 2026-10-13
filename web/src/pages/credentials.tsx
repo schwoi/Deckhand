@@ -155,17 +155,17 @@ export function ProviderActions({
         }
         onSaved={onChanged}
       />
-      <ChatgptDialog
-        open={dialog === 'chatgpt'}
-        onClose={close}
-        onSignedIn={() => done('Signed in to ChatGPT')}
-      />
-      <CopilotDialog
-        open={dialog === 'copilot'}
-        onClose={close}
-        onSignedIn={() => done('Signed in to GitHub Copilot')}
-        onUseToken={() => setDialog('key')}
-      />
+      {/* Mounted per attempt: see useSignIn. */}
+      {dialog === 'chatgpt' && (
+        <ChatgptDialog onClose={close} onSignedIn={() => done('Signed in to ChatGPT')} />
+      )}
+      {dialog === 'copilot' && (
+        <CopilotDialog
+          onClose={close}
+          onSignedIn={() => done('Signed in to GitHub Copilot')}
+          onUseToken={() => setDialog('key')}
+        />
+      )}
     </>
   )
 }
@@ -327,11 +327,11 @@ export function KeyDialog({
 type FlowPart = { flow?: unknown; error?: string; signedIn: boolean }
 
 /**
- * Start a server-side sign-in when the dialog opens, poll until it finishes, and cancel it when
- * the dialog is dismissed. `gen` drops responses from an attempt that was already abandoned.
+ * Start a server-side sign-in on mount, poll until it finishes, and cancel it when dismissed or
+ * unmounted mid-flow. Dialogs using this are mounted per attempt, so no earlier result can count
+ * as this one's success. `gen` drops responses from an attempt that was already abandoned.
  */
 function useSignIn(
-  open: boolean,
   start: () => Promise<CredentialsStatus>,
   cancel: () => Promise<unknown>,
   pick: (s: CredentialsStatus) => FlowPart,
@@ -355,8 +355,8 @@ function useSignIn(
     })
   }, [start, accept])
   useEffect(() => {
-    if (open) begin()
-  }, [open, begin])
+    begin()
+  }, [begin])
 
   const part = status ? pick(status) : null
   const pending = !!part?.flow
@@ -366,7 +366,16 @@ function useSignIn(
     return () => clearInterval(t)
   }, [pending, accept])
 
-  const done = open && !!part && !part.flow && !part.error && part.signedIn
+  const pendingRef = useRef(false)
+  pendingRef.current = pending
+  useEffect(
+    () => () => {
+      if (pendingRef.current) cancel().catch(() => {})
+    },
+    [cancel],
+  )
+
+  const done = !!part && !part.flow && !part.error && part.signedIn
   // biome-ignore lint/correctness/useExhaustiveDependencies: fire once per completed attempt
   useEffect(() => {
     if (done) onDone()
@@ -392,14 +401,9 @@ function FlowError({ error, onRetry }: { error: string; onRetry: () => void }) {
   )
 }
 
-function ChatgptDialog({
-  open,
-  onClose,
-  onSignedIn,
-}: { open: boolean; onClose: () => void; onSignedIn: () => void }) {
+function ChatgptDialog({ onClose, onSignedIn }: { onClose: () => void; onSignedIn: () => void }) {
   const { current } = useEnvironments()
   const signIn = useSignIn(
-    open,
     api.credentials.chatgptLogin,
     api.credentials.chatgptCancel,
     (s) => ({ ...s.chatgpt, signedIn: !!s.chatgpt.account }),
@@ -408,11 +412,6 @@ function ChatgptDialog({
   const [url, setUrl] = useState('')
   const [finishing, setFinishing] = useState(false)
   const [pasteError, setPasteError] = useState<string | null>(null)
-  useEffect(() => {
-    if (!open) return
-    setUrl('')
-    setPasteError(null)
-  }, [open])
 
   const flow = signIn.status?.chatgpt.flow
   // The redirect to localhost:1455 reaches Deckhand only when the browser runs on its machine.
@@ -459,7 +458,7 @@ function ChatgptDialog({
 
   return (
     <Dialog
-      open={open}
+      open
       onClose={dismiss}
       title="Sign in with ChatGPT"
       description="Use a ChatGPT Plus, Pro or Business plan instead of an API key."
@@ -494,22 +493,17 @@ function ChatgptDialog({
 }
 
 function CopilotDialog({
-  open,
   onClose,
   onSignedIn,
   onUseToken,
-}: { open: boolean; onClose: () => void; onSignedIn: () => void; onUseToken: () => void }) {
+}: { onClose: () => void; onSignedIn: () => void; onUseToken: () => void }) {
   const signIn = useSignIn(
-    open,
     api.credentials.copilotLogin,
     api.credentials.copilotCancel,
     (s) => ({ ...s.githubCopilot, signedIn: s.envVars.includes('GITHUB_TOKEN') }),
     onSignedIn,
   )
   const [copied, setCopied] = useState(false)
-  useEffect(() => {
-    if (open) setCopied(false)
-  }, [open])
   const flow = signIn.status?.githubCopilot.flow
   const copy = () => {
     if (!flow) return
@@ -521,7 +515,7 @@ function CopilotDialog({
 
   return (
     <Dialog
-      open={open}
+      open
       onClose={() => {
         signIn.abandon()
         onClose()

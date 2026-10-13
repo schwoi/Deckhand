@@ -25,6 +25,7 @@ import { api, errorText } from '../api'
 import { Button } from '../components/ui/Button'
 import { Switch } from '../components/ui/form'
 import { Badge, Card, CardHeader, Code, Dot, PageHeader, Skeleton } from '../components/ui/misc'
+import { invalidateDoctor } from '../editor/hooks'
 import { relativeTime } from '../lib/util'
 import { useRuntime } from '../runtime'
 import { CredentialBadge, KeyDialog, OtherKeys, ProviderActions } from './credentials'
@@ -242,7 +243,10 @@ function RuntimeCard() {
 
 function ProvidersCard() {
   const [version, setVersion] = useState(0)
-  const reload = () => setVersion((v) => v + 1)
+  const reload = () => {
+    invalidateDoctor()
+    setVersion((v) => v + 1)
+  }
   const [adding, setAdding] = useState(false)
   const { data, error } = useLoad<DoctorReport>(api.system.doctor, [version])
   const { data: creds } = useLoad<CredentialsStatus>(api.credentials.status, [version])

@@ -328,13 +328,14 @@ function ModelField({
   const custom =
     m.provider && Object.hasOwn(providers, m.provider) ? providers[m.provider] : undefined
   const baseUrl = m.base_url ?? custom?.base_url
+  const tokenKey = m.token_key ?? custom?.token_key
   const kind = custom?.provider ?? m.provider ?? ''
   const { merge, status } = useLiveModelOptions(
     !m.provider
       ? null
       : baseUrl
-        ? { provider: m.provider, base_url: baseUrl, token_key: m.token_key ?? custom?.token_key }
-        : { provider: kind },
+        ? { provider: m.provider, base_url: baseUrl, token_key: tokenKey }
+        : { provider: kind, token_key: tokenKey },
   )
   const options = merge(
     catalog

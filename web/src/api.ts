@@ -50,6 +50,8 @@ let envId = LOCAL_ENV
 export function setApiEnvironment(id: string): void {
   envId = id
 }
+/** The environment API calls currently go to; per-environment caches key on it. */
+export const apiEnvironment = (): string => envId
 const enc = encodeURIComponent
 const base = (local = false) => (local || envId === LOCAL_ENV ? '/api' : `/api/env/${enc(envId)}`)
 
