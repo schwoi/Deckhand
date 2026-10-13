@@ -117,6 +117,7 @@ export const SAFETY_INFO: Record<SafetyMode, string> = {
 
 export const SECTIONS = [
   { id: 'agents', label: 'Agents' },
+  { id: 'topology', label: 'Topology' },
   { id: 'models', label: 'Models' },
   { id: 'mcps', label: 'MCP servers' },
   { id: 'permissions', label: 'Permissions & runtime' },

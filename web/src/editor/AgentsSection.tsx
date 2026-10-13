@@ -1,5 +1,7 @@
+import { removeAgent, renameAgent } from '@shared/agent-refs'
 import type { AgentConfig, AgentFile, Json } from '@shared/config'
 import { SAFETY_MODES } from '@shared/config'
+import { defaultEntry } from '@shared/topology'
 import { Plus, Trash2 } from 'lucide-react'
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 import { Button } from '../components/ui/Button'
@@ -9,14 +11,29 @@ import { confirmDialog } from '../components/ui/Dialog'
 import { Field, Input, NumberInput, Select, Switch, Textarea } from '../components/ui/form'
 import { KeyValueEditor, TagInput } from '../components/ui/lists'
 import { Badge, Code, Disclosure } from '../components/ui/misc'
-import { NAME_RE, cn, omitKey, renameKey, uniqueKey, withField } from '../lib/util'
+import { NAME_RE, cn, isPlainObject, uniqueKey, withField } from '../lib/util'
 import { ToolsetList } from './Toolsets'
+import { agentFormView } from './agentView'
 import { SAFETY_INFO } from './catalog'
 import { useDoctor } from './hooks'
 
 export function orderedAgentNames(config: AgentFile): string[] {
   const names = Object.keys(config.agents ?? {})
   return names.includes('root') ? ['root', ...names.filter((n) => n !== 'root')] : names
+}
+
+/** Name and body for a new agent: `root` first, then `agent`, `agent2`…, with the entry's model. */
+export function newAgentDefaults(config: AgentFile): { name: string; agent: AgentConfig } {
+  const names = orderedAgentNames(config)
+  const name = uniqueKey(names, names.length === 0 ? 'root' : 'agent')
+  const model = config.agents?.[names[0] ?? '']?.model
+  return { name, agent: model ? { model } : {} }
+}
+
+/** Why `name` can't be used for an agent, if it can't. */
+export function agentNameError(config: AgentFile, name: string): string | undefined {
+  if (!NAME_RE.test(name)) return 'Invalid name'
+  if (Object.hasOwn(config.agents ?? {}, name)) return 'Name already used'
 }
 
 export function AgentsSection({
@@ -33,6 +50,7 @@ export function AgentsSection({
   const agents = config.agents ?? {}
   const names = orderedAgentNames(config)
   const current = names.includes(selected) ? selected : names[0]
+  const entry = defaultEntry(Object.keys(agents))
   const tabs = useRef<HTMLDivElement>(null)
   // biome-ignore lint/correctness/useExhaustiveDependencies: keep the selected tab in view when it changes
   useEffect(() => {
@@ -42,9 +60,8 @@ export function AgentsSection({
   }, [current])
 
   const add = () => {
-    const name = uniqueKey(names, names.length === 0 ? 'root' : 'agent')
-    const model = agents[names[0] ?? '']?.model
-    onChange({ ...config, agents: { ...agents, [name]: model ? { model } : {} } })
+    const { name, agent } = newAgentDefaults(config)
+    onChange({ ...config, agents: { ...agents, [name]: agent } })
     onSelect(name)
   }
 
@@ -71,20 +88,21 @@ export function AgentsSection({
             )}
           >
             {n}
-            {n === 'root' && <span className="font-sans text-2xs opacity-70">entry</span>}
+            {n === entry && <span className="font-sans text-2xs opacity-70">entry</span>}
           </button>
         ))}
         <Button size="sm" variant="ghost" icon={<Plus />} onClick={add}>
           Add agent
         </Button>
       </div>
-      {current && agents[current] ? (
+      {current ? (
         <AgentForm
           key={current}
           name={current}
           config={config}
           onChange={onChange}
           onRenamed={onSelect}
+          entry={current === entry}
         />
       ) : (
         <p className="text-muted">No agents defined.</p>
@@ -93,80 +111,67 @@ export function AgentsSection({
   )
 }
 
-function AgentForm({
+export function AgentForm({
   name,
   config,
   onChange,
   onRenamed,
+  onRemoved,
+  entry,
 }: {
   name: string
   config: AgentFile
   onChange: (c: AgentFile) => void
   onRenamed: (n: string) => void
+  /** called after removal; defaults to selecting the first remaining agent via onRenamed */
+  onRemoved?: () => void
+  entry?: boolean
 }) {
   const agents = config.agents
-  const agent: AgentConfig = agents[name] ?? {}
+  const raw = agents[name]
+  // well-formed fields only; edits are applied to the raw agent so nothing else is rewritten
+  const { agent, invalid, malformed } = useMemo(() => agentFormView(raw), [raw])
   const others = Object.keys(agents).filter((n) => n !== name)
   const path = `agents.${name}`
   const auto = useDoctor()?.auto_model
 
-  const setAgent = (next: AgentConfig) =>
-    onChange({ ...config, agents: { ...agents, [name]: next } })
   const set = <K extends keyof AgentConfig>(k: K, v: AgentConfig[K]) =>
-    setAgent(withField(agent, k, v))
+    onChange({
+      ...config,
+      agents: {
+        ...agents,
+        [name]: withField(isPlainObject(raw) ? (raw as AgentConfig) : {}, k, v),
+      },
+    })
+  /** the control, or a pointer to the YAML when the draft's value has a shape it can't edit */
+  const guard = (field: string, control: ReactNode) =>
+    invalid.has(field) ? <YamlOnly field={field} /> : control
 
   const [draftName, setDraftName] = useState(name)
   useEffect(() => setDraftName(name), [name])
-  const nameErr =
-    draftName === name
-      ? undefined
-      : !NAME_RE.test(draftName)
-        ? 'Invalid name'
-        : others.includes(draftName)
-          ? 'Name already used'
-          : undefined
+  const nameErr = draftName === name ? undefined : agentNameError(config, draftName)
   const commitRename = () => {
     if (draftName === name || nameErr) {
       setDraftName(name)
       return
     }
-    const rewrite = (list: string[] | undefined) => list?.map((x) => (x === name ? draftName : x))
-    const renamed = renameKey(agents, name, draftName)
-    for (const [k, a] of Object.entries(renamed)) {
-      renamed[k] = {
-        ...a,
-        ...(a.sub_agents && { sub_agents: rewrite(a.sub_agents) }),
-        ...(a.handoffs && { handoffs: rewrite(a.handoffs) }),
-      }
-    }
-    onChange({ ...config, agents: renamed })
+    onChange(renameAgent(config, name, draftName))
     onRenamed(draftName)
   }
 
   const remove = async () => {
     const ok = await confirmDialog({
       title: `Remove agent ${name}?`,
-      message: 'References to it in sub_agents and handoffs are removed too.',
+      message:
+        'References to it in sub_agents, handoffs, force_handoff and routing are removed too.',
       confirmLabel: 'Remove',
       danger: true,
     })
     if (!ok) return
-    const rest = omitKey(agents, name)
-    for (const [k, a] of Object.entries(rest)) {
-      let next = withField(
-        a,
-        'sub_agents',
-        a.sub_agents?.filter((x) => x !== name),
-      )
-      next = withField(
-        next,
-        'handoffs',
-        next.handoffs?.filter((x) => x !== name),
-      )
-      rest[k] = next
-    }
-    onChange({ ...config, agents: rest })
-    onRenamed(Object.keys(rest)[0] ?? '')
+    const next = removeAgent(config, name)
+    onChange(next)
+    if (onRemoved) onRemoved()
+    else onRenamed(Object.keys(next.agents)[0] ?? '')
   }
 
   // Only what this file configures, plus `auto` (docker-agent picks at runtime). Inline
@@ -175,7 +180,7 @@ function AgentForm({
     () => [
       ...Object.entries(config.models ?? {}).map(([k, m]) => ({
         value: k,
-        hint: [m.provider, m.model].filter(Boolean).join('/'),
+        hint: [m?.provider, m?.model].filter(Boolean).join('/'),
         group: 'Models in this file',
       })),
       {
@@ -187,7 +192,10 @@ function AgentForm({
     [config.models, auto],
   )
 
-  const agentOptions = others.map((n) => ({ value: n, hint: agents[n]?.description }))
+  const agentOptions = others.map((n) => {
+    const d = agents[n]?.description
+    return { value: n, hint: typeof d === 'string' ? d : undefined }
+  })
   const instruction = Array.isArray(agent.instruction)
     ? agent.instruction.join('\n\n')
     : (agent.instruction ?? '')
@@ -202,41 +210,52 @@ function AgentForm({
   }
   const commandsIsList = Array.isArray(agent.commands)
 
+  const header = (
+    <div className="flex flex-wrap items-end gap-3">
+      <Field label="Agent name" htmlFor="agent-name" error={nameErr} className="w-full sm:w-64">
+        <Input
+          id="agent-name"
+          mono
+          value={draftName}
+          aria-invalid={!!nameErr}
+          onChange={(e) => setDraftName(e.target.value)}
+          onBlur={commitRename}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') commitRename()
+            if (e.key === 'Escape') setDraftName(name)
+          }}
+        />
+      </Field>
+      {entry && (
+        <span className="pb-2 text-sm text-faint">
+          <Badge tone="accent">entry point</Badge>
+        </span>
+      )}
+      <div className="ml-auto pb-0.5">
+        <Button
+          variant="danger-ghost"
+          size="sm"
+          icon={<Trash2 />}
+          onClick={remove}
+          disabled={others.length === 0}
+        >
+          Remove agent
+        </Button>
+      </div>
+    </div>
+  )
+  if (malformed)
+    return (
+      <div className="flex flex-col gap-4">
+        {header}
+        <YamlOnly field="this agent" shape="a mapping of settings" />
+      </div>
+    )
+
   return (
     <div className="flex flex-col gap-6">
       <section className="flex flex-col gap-4">
-        <div className="flex flex-wrap items-end gap-3">
-          <Field label="Agent name" htmlFor="agent-name" error={nameErr} className="w-full sm:w-64">
-            <Input
-              id="agent-name"
-              mono
-              value={draftName}
-              aria-invalid={!!nameErr}
-              onChange={(e) => setDraftName(e.target.value)}
-              onBlur={commitRename}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') commitRename()
-                if (e.key === 'Escape') setDraftName(name)
-              }}
-            />
-          </Field>
-          {name === 'root' && (
-            <span className="pb-2 text-sm text-faint">
-              <Badge tone="accent">entry point</Badge>
-            </span>
-          )}
-          <div className="ml-auto pb-0.5">
-            <Button
-              variant="danger-ghost"
-              size="sm"
-              icon={<Trash2 />}
-              onClick={remove}
-              disabled={others.length === 0}
-            >
-              Remove agent
-            </Button>
-          </div>
-        </div>
+        {header}
         <Field
           label="Model"
           path={`${path}.model`}
@@ -248,24 +267,30 @@ function AgentForm({
             </>
           }
         >
-          <Combobox
-            mono
-            value={agent.model ?? ''}
-            onChange={(v) => set('model', v)}
-            options={modelOptions}
-            placeholder="openai/gpt-5-mini"
-          />
+          {guard(
+            'model',
+            <Combobox
+              mono
+              value={agent.model ?? ''}
+              onChange={(v) => set('model', v)}
+              options={modelOptions}
+              placeholder="openai/gpt-5-mini"
+            />,
+          )}
         </Field>
         <Field
           label="Description"
           path={`${path}.description`}
           help="Shown to parent agents when they decide whom to delegate to."
         >
-          <Input
-            value={agent.description ?? ''}
-            onChange={(e) => set('description', e.target.value)}
-            placeholder="What this agent does"
-          />
+          {guard(
+            'description',
+            <Input
+              value={agent.description ?? ''}
+              onChange={(e) => set('description', e.target.value)}
+              placeholder="What this agent does"
+            />,
+          )}
         </Field>
         <Field
           label="Instruction"
@@ -281,25 +306,31 @@ function AgentForm({
             </button>
           }
         >
-          <Textarea
-            autoGrow
-            minRows={5}
-            mono={monoInstruction}
-            value={instruction}
-            onChange={(e) => set('instruction', e.target.value)}
-            placeholder="You are a helpful assistant…"
-          />
+          {guard(
+            'instruction',
+            <Textarea
+              autoGrow
+              minRows={5}
+              mono={monoInstruction}
+              value={instruction}
+              onChange={(e) => set('instruction', e.target.value)}
+              placeholder="You are a helpful assistant…"
+            />,
+          )}
         </Field>
       </section>
 
       <section className="flex flex-col gap-2" id={`f-${path}.toolsets`}>
         <SectionTitle title="Toolsets" description="Tools this agent can call." />
-        <ToolsetList
-          value={agent.toolsets}
-          onChange={(v) => set('toolsets', v)}
-          mcpNames={Object.keys(config.mcps ?? {})}
-          path={`${path}.toolsets`}
-        />
+        {guard(
+          'toolsets',
+          <ToolsetList
+            value={agent.toolsets}
+            onChange={(v) => set('toolsets', v)}
+            mcpNames={Object.keys(config.mcps ?? {})}
+            path={`${path}.toolsets`}
+          />,
+        )}
       </section>
 
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -313,32 +344,56 @@ function AgentForm({
             </>
           }
         >
-          <TagInput
-            mono
-            value={agent.sub_agents}
-            onChange={(v) => set('sub_agents', v)}
-            suggestions={agentOptions}
-            placeholder="Add agent…"
-          />
+          {guard(
+            'sub_agents',
+            <TagInput
+              mono
+              value={agent.sub_agents}
+              onChange={(v) => set('sub_agents', v)}
+              suggestions={agentOptions}
+              placeholder="Add agent…"
+            />,
+          )}
         </Field>
         <Field
           label="Handoffs"
           path={`${path}.handoffs`}
           help="Agents this one can hand the whole conversation to."
         >
-          <TagInput
-            mono
-            value={agent.handoffs}
-            onChange={(v) => set('handoffs', v)}
-            suggestions={agentOptions}
-            placeholder="Add agent…"
-          />
+          {guard(
+            'handoffs',
+            <TagInput
+              mono
+              value={agent.handoffs}
+              onChange={(v) => set('handoffs', v)}
+              suggestions={agentOptions}
+              placeholder="Add agent…"
+            />,
+          )}
+        </Field>
+        <Field
+          label="Forced handoff"
+          path={`${path}.force_handoff`}
+          help="Always receives the conversation when this agent gives its final answer."
+        >
+          {guard(
+            'force_handoff',
+            <Combobox
+              mono
+              value={agent.force_handoff ?? ''}
+              onChange={(v) => set('force_handoff', v.trim() || undefined)}
+              options={agentOptions}
+              placeholder="none"
+            />,
+          )}
         </Field>
       </section>
 
       <section className="flex flex-col gap-2" id={`f-${path}.commands`}>
         <SectionTitle title="Commands" description="Named prompts users can run with /name." />
-        {commandsIsList ? (
+        {invalid.has('commands') ? (
+          <YamlOnly field="commands" />
+        ) : commandsIsList ? (
           <p className="text-sm text-muted">
             Commands are defined as a list; edit them in the YAML tab.
           </p>
@@ -363,7 +418,7 @@ function AgentForm({
       </section>
 
       <Disclosure title="Advanced" className="border-t pt-4">
-        <AdvancedAgentFields agent={agent} set={set} path={path} />
+        <AdvancedAgentFields agent={agent} set={set} path={path} guard={guard} />
       </Disclosure>
     </div>
   )
@@ -373,10 +428,12 @@ function AdvancedAgentFields({
   agent,
   set,
   path,
+  guard,
 }: {
   agent: AgentConfig
   set: <K extends keyof AgentConfig>(k: K, v: AgentConfig[K]) => void
   path: string
+  guard: (field: string, control: ReactNode) => ReactNode
 }) {
   return (
     <div className="flex flex-col gap-5">
@@ -388,27 +445,35 @@ function AdvancedAgentFields({
             agent.safety ? SAFETY_INFO[agent.safety] : 'Inherit from runtime.safety or the CLI.'
           }
         >
-          <Select
-            value={agent.safety ?? ''}
-            onChange={(e) => set('safety', (e.target.value || undefined) as AgentConfig['safety'])}
-          >
-            <option value="">inherit</option>
-            {SAFETY_MODES.map((m) => (
-              <option key={m} value={m}>
-                {m}
-              </option>
-            ))}
-          </Select>
+          {guard(
+            'safety',
+            <Select
+              value={agent.safety ?? ''}
+              onChange={(e) =>
+                set('safety', (e.target.value || undefined) as AgentConfig['safety'])
+              }
+            >
+              <option value="">inherit</option>
+              {SAFETY_MODES.map((m) => (
+                <option key={m} value={m}>
+                  {m}
+                </option>
+              ))}
+            </Select>,
+          )}
         </Field>
         <Field
           label="Welcome message"
           path={`${path}.welcome_message`}
           help="Shown when a session starts."
         >
-          <Input
-            value={agent.welcome_message ?? ''}
-            onChange={(e) => set('welcome_message', e.target.value)}
-          />
+          {guard(
+            'welcome_message',
+            <Input
+              value={agent.welcome_message ?? ''}
+              onChange={(e) => set('welcome_message', e.target.value)}
+            />,
+          )}
         </Field>
       </div>
       <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2 lg:gap-y-3">
@@ -451,38 +516,50 @@ function AdvancedAgentFields({
       </div>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Field label="Max iterations" path={`${path}.max_iterations`}>
-          <NumberInput
-            value={agent.max_iterations}
-            onChange={(v) => set('max_iterations', v)}
-            placeholder="unlimited"
-            min={0}
-          />
+          {guard(
+            'max_iterations',
+            <NumberInput
+              value={agent.max_iterations}
+              onChange={(v) => set('max_iterations', v)}
+              placeholder="unlimited"
+              min={0}
+            />,
+          )}
         </Field>
         <Field label="Max repeated calls" path={`${path}.max_consecutive_tool_calls`}>
-          <NumberInput
-            value={agent.max_consecutive_tool_calls}
-            onChange={(v) => set('max_consecutive_tool_calls', v)}
-            placeholder="5"
-            min={0}
-          />
+          {guard(
+            'max_consecutive_tool_calls',
+            <NumberInput
+              value={agent.max_consecutive_tool_calls}
+              onChange={(v) => set('max_consecutive_tool_calls', v)}
+              placeholder="5"
+              min={0}
+            />,
+          )}
         </Field>
         <Field label="History items" path={`${path}.num_history_items`}>
-          <NumberInput
-            value={agent.num_history_items}
-            onChange={(v) => set('num_history_items', v)}
-            placeholder="all"
-            min={0}
-          />
+          {guard(
+            'num_history_items',
+            <NumberInput
+              value={agent.num_history_items}
+              onChange={(v) => set('num_history_items', v)}
+              placeholder="all"
+              min={0}
+            />,
+          )}
         </Field>
         <Field label="Compaction at" path={`${path}.compaction_threshold`}>
-          <NumberInput
-            value={agent.compaction_threshold}
-            onChange={(v) => set('compaction_threshold', v)}
-            placeholder="0.9"
-            step={0.05}
-            min={0}
-            max={1}
-          />
+          {guard(
+            'compaction_threshold',
+            <NumberInput
+              value={agent.compaction_threshold}
+              onChange={(v) => set('compaction_threshold', v)}
+              placeholder="0.9"
+              step={0.05}
+              min={0}
+              max={1}
+            />,
+          )}
         </Field>
       </div>
     </div>
@@ -502,5 +579,15 @@ export function SectionTitle({
       </div>
       {actions}
     </div>
+  )
+}
+
+/** Stands in for a control when the draft holds a value of the wrong shape. */
+function YamlOnly({ field, shape }: { field: string; shape?: string }) {
+  return (
+    <p className="rounded-md bg-warning-soft px-3 py-2 text-sm">
+      <Code>{field}</Code> {shape ? `should be ${shape}` : 'has a value the form cannot edit'}. Fix
+      it in the YAML tab; the rest of the form still works.
+    </p>
   )
 }

@@ -12,7 +12,7 @@ import {
   TriangleAlert,
   Upload,
 } from 'lucide-react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { YAMLParseError, parse, stringify } from 'yaml'
 import { api, errorText } from '../api'
 import { Button } from '../components/ui/Button'
@@ -28,9 +28,11 @@ import { McpsSection } from './McpsSection'
 import { MetadataSection } from './MetadataSection'
 import { ModelsSection } from './ModelsSection'
 import { PermissionsSection } from './PermissionsSection'
+import { type TopologyMemory, TopologySection } from './TopologySection'
 import { type ParseError, YamlEditor } from './YamlEditor'
 import { SECTIONS, type SectionId, sectionForPath } from './catalog'
 import { DoctorDialog, PushDialog } from './dialogs'
+import { revealField } from './reveal'
 
 const toYaml = (c: AgentFile) => stringify(c, { lineWidth: 0 })
 
@@ -68,6 +70,9 @@ export function EditorPage({ name }: { name: string }) {
   const validated = useRef('')
   const runtime = useRuntime()
   const sectionNav = useRef<HTMLElement>(null)
+  // topology view state survives section switches; a fresh one per file
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reset when the file changes
+  const topologyMemory = useMemo<TopologyMemory>(() => ({}), [name])
 
   // keep the active section visible in the horizontally scrolling strip (below lg)
   // biome-ignore lint/correctness/useExhaustiveDependencies: re-run when the section changes
@@ -249,7 +254,6 @@ export function EditorPage({ name }: { name: string }) {
 
   const jumpTo = (issue: ValidationIssue) => {
     const sec = sectionForPath(issue.path)
-    const parts = issue.path.split('.')
     setSection(sec)
     if (sec === 'agents' && config) {
       // agent names may contain dots, so match against the known names (longest first)
@@ -258,26 +262,7 @@ export function EditorPage({ name }: { name: string }) {
         .find((n) => issue.path === `agents.${n}` || issue.path.startsWith(`agents.${n}.`))
       if (target) setAgent(target)
     }
-    requestAnimationFrame(() =>
-      requestAnimationFrame(() => {
-        for (let n = parts.length; n > 0; n--) {
-          const el = document.getElementById(`f-${parts.slice(0, n).join('.')}`)
-          if (!el) continue
-          for (let d = el.closest('details'); d; d = d.parentElement?.closest('details') ?? null)
-            d.open = true
-          el.scrollIntoView({ block: 'center', behavior: 'smooth' })
-          el.querySelector<HTMLElement>('input, textarea, select')?.focus({ preventScroll: true })
-          el.animate(
-            [
-              { boxShadow: '0 0 0 3px color-mix(in oklch, var(--danger) 35%, transparent)' },
-              { boxShadow: '0 0 0 3px transparent' },
-            ],
-            { duration: 1400, easing: 'ease-out' },
-          )
-          return
-        }
-      }),
-    )
+    revealField(issue.path)
   }
 
   if (loadError)
@@ -494,6 +479,16 @@ export function EditorPage({ name }: { name: string }) {
               title="This file does not parse"
               description="Fix the YAML to use the form editor."
               action={<Button onClick={() => setSection('yaml')}>Open YAML</Button>}
+            />
+          ) : section === 'topology' ? (
+            <TopologySection
+              config={config}
+              onChange={updateConfig}
+              issues={issues}
+              stale={!!parseError}
+              onGoToYaml={() => setSection('yaml')}
+              onSelectAgent={setAgent}
+              memory={topologyMemory}
             />
           ) : (
             <div className="h-full overflow-y-auto">
