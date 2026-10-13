@@ -224,16 +224,12 @@ app.get('/api/system/models', async (c) => {
   return c.json(await modelsCache(all ? 'all' : 'default', () => runJson<ModelInfo[]>(args)))
 })
 
-// ?provider=openai, or a custom endpoint: &base_url=…&token_key=MY_KEY
-app.get('/api/system/models/live', async (c) => {
-  const provider = c.req.query('provider')
-  if (!provider) throw new HttpError(400, 'provider is required')
+// { provider } or, for a custom endpoint, { provider, base_url, token_key }. POST with a JSON
+// body so the cross-site checks apply: this resolves secrets and sends them to base_url.
+app.post('/api/system/models/live', async (c) => {
+  const b = await body(c)
   return c.json(
-    await liveModels(
-      provider,
-      c.req.query('base_url') || undefined,
-      c.req.query('token_key') || undefined,
-    ),
+    await liveModels(str(b, 'provider'), str(b, 'base_url', true), str(b, 'token_key', true)),
   )
 })
 

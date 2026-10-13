@@ -256,9 +256,7 @@ export const api = {
     toolsets: () => get<ToolsetInfo[]>('/system/toolsets'),
     models: (all = false) => get<ModelInfo[]>(`/system/models${all ? '?all=1' : ''}`),
     liveModels: (q: { provider: string; base_url?: string; token_key?: string }) =>
-      get<LiveModels>(
-        `/system/models/live?${new URLSearchParams(Object.entries(q).filter(([, v]) => v) as [string, string][])}`,
-      ),
+      post<LiveModels>('/system/models/live', q),
     doctor: () => get<DoctorReport>('/system/doctor'),
   },
   credentials: {

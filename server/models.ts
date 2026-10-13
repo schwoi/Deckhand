@@ -52,16 +52,30 @@ function need(...names: string[]): string {
   throw new Unavailable(`no ${names.join(' or ')} found`)
 }
 
+// Error messages never include the URL: a custom base_url may have secrets expanded into it.
 async function getJson<T>(url: string, headers: Record<string, string>): Promise<T> {
-  const res = await fetch(url, {
-    headers: { accept: 'application/json', ...headers },
-    signal: AbortSignal.timeout(10_000),
-    redirect: 'error',
-  })
+  let res: Response
+  try {
+    res = await fetch(url, {
+      headers: { accept: 'application/json', ...headers },
+      signal: AbortSignal.timeout(10_000),
+      redirect: 'error',
+    })
+  } catch (e) {
+    throw new Error(
+      e instanceof Error && e.name === 'TimeoutError'
+        ? 'timed out'
+        : 'could not reach the provider',
+    )
+  }
   if (res.status === 401 || res.status === 403)
     throw new Error(`the provider rejected the credential (HTTP ${res.status})`)
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
-  return (await res.json()) as T
+  try {
+    return (await res.json()) as T
+  } catch {
+    throw new Error('the provider did not return JSON')
+  }
 }
 
 const sorted = (ids: (string | undefined)[]) =>
@@ -78,7 +92,7 @@ async function openaiCompatible(baseUrl: string, token: string | undefined): Pro
 async function fetchModels(provider: string, baseUrl?: string, tokenKey?: string) {
   if (baseUrl) {
     const url = baseUrl.replace(/\$\{(\w+)\}/g, (_, n: string) => lookupSecret(n) ?? '')
-    if (!/^https?:\/\//i.test(url)) throw new Unavailable(`base_url is not an http(s) URL: ${url}`)
+    if (!/^https?:\/\//i.test(url)) throw new Unavailable('base_url is not an http(s) URL')
     return openaiCompatible(url, tokenKey ? need(tokenKey) : undefined)
   }
   switch (provider) {

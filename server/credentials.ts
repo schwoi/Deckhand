@@ -208,16 +208,18 @@ export async function completeChatgptLogin(redirectUrl: string): Promise<void> {
       'paste the full address from the browser, starting with http://localhost:1455',
     )
   }
+  // State first, errors included: anything can navigate to localhost:1455, and only a
+  // response to this attempt may end it.
+  const state = Buffer.from(params.get('state') ?? '')
+  const expected = Buffer.from(flow.state)
+  if (state.length !== expected.length || !timingSafeEqual(state, expected))
+    throw new HttpError(400, 'that address belongs to a different sign-in attempt')
   const err = params.get('error')
   if (err) {
     endChatgptFlow(flow)
     chatgptError = `ChatGPT refused the sign-in: ${params.get('error_description') || err}`
     throw new HttpError(400, chatgptError)
   }
-  const state = Buffer.from(params.get('state') ?? '')
-  const expected = Buffer.from(flow.state)
-  if (state.length !== expected.length || !timingSafeEqual(state, expected))
-    throw new HttpError(400, 'that address belongs to a different sign-in attempt')
   const code = params.get('code')
   if (!code) throw new HttpError(400, 'that address has no authorization code')
 
