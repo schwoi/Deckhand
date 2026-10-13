@@ -1,9 +1,10 @@
 # One Deckhand node. Run it on each server, then add each one as an environment in the
 # dashboard you use. Set DECKHAND_TOKEN: the port is reachable from other machines.
+# Pin a release (e.g. :2026.10.13.1) instead of :latest for reproducible deploys.
+# To build from source instead, use compose.dev.yaml.
 services:
   deckhand:
-    build: .
-    # image: ghcr.io/<you>/deckhand:latest
+    image: ghcr.io/schwoi/deckhand:latest
     ports:
       - '4800:4800'
     volumes:
