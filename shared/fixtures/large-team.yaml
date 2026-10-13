@@ -1,0 +1,272 @@
+# Topology performance fixture: 50 agents, 150 relationships
+# (49 delegations as a 4-ary tree, 100 handoffs, 1 forced handoff).
+version: "16"
+models:
+  fast:
+    provider: openai
+    model: gpt-5-mini
+agents:
+  root:
+    model: fast
+    description: Specialist number 0 in the large fixture team
+    instruction: You are root.
+    sub_agents: [agent01, agent02, agent03, agent04]
+    handoffs: [agent07, agent13]
+  agent01:
+    model: fast
+    description: Specialist number 1 in the large fixture team
+    instruction: You are agent01.
+    sub_agents: [agent05, agent06, agent07, agent08]
+    handoffs: [agent08, agent14]
+  agent02:
+    model: fast
+    description: Specialist number 2 in the large fixture team
+    instruction: You are agent02.
+    sub_agents: [agent09, agent10, agent11, agent12]
+    handoffs: [agent09, agent15]
+  agent03:
+    model: fast
+    description: Specialist number 3 in the large fixture team
+    instruction: You are agent03.
+    sub_agents: [agent13, agent14, agent15, agent16]
+    handoffs: [agent10, agent16]
+  agent04:
+    model: fast
+    description: Specialist number 4 in the large fixture team
+    instruction: You are agent04.
+    sub_agents: [agent17, agent18, agent19, agent20]
+    handoffs: [agent11, agent17]
+  agent05:
+    model: fast
+    description: Specialist number 5 in the large fixture team
+    instruction: You are agent05.
+    sub_agents: [agent21, agent22, agent23, agent24]
+    handoffs: [agent12, agent18]
+  agent06:
+    model: fast
+    description: Specialist number 6 in the large fixture team
+    instruction: You are agent06.
+    sub_agents: [agent25, agent26, agent27, agent28]
+    handoffs: [agent13, agent19]
+  agent07:
+    model: fast
+    description: Specialist number 7 in the large fixture team
+    instruction: You are agent07.
+    sub_agents: [agent29, agent30, agent31, agent32]
+    handoffs: [agent14, agent20]
+  agent08:
+    model: fast
+    description: Specialist number 8 in the large fixture team
+    instruction: You are agent08.
+    sub_agents: [agent33, agent34, agent35, agent36]
+    handoffs: [agent15, agent21]
+  agent09:
+    model: fast
+    description: Specialist number 9 in the large fixture team
+    instruction: You are agent09.
+    sub_agents: [agent37, agent38, agent39, agent40]
+    handoffs: [agent16, agent22]
+  agent10:
+    model: fast
+    description: Specialist number 10 in the large fixture team
+    instruction: You are agent10.
+    sub_agents: [agent41, agent42, agent43, agent44]
+    handoffs: [agent17, agent23]
+  agent11:
+    model: fast
+    description: Specialist number 11 in the large fixture team
+    instruction: You are agent11.
+    sub_agents: [agent45, agent46, agent47, agent48]
+    handoffs: [agent18, agent24]
+  agent12:
+    model: fast
+    description: Specialist number 12 in the large fixture team
+    instruction: You are agent12.
+    sub_agents: [agent49]
+    handoffs: [agent19, agent25]
+  agent13:
+    model: fast
+    description: Specialist number 13 in the large fixture team
+    instruction: You are agent13.
+    handoffs: [agent20, agent26]
+  agent14:
+    model: fast
+    description: Specialist number 14 in the large fixture team
+    instruction: You are agent14.
+    handoffs: [agent21, agent27]
+  agent15:
+    model: fast
+    description: Specialist number 15 in the large fixture team
+    instruction: You are agent15.
+    handoffs: [agent22, agent28]
+  agent16:
+    model: fast
+    description: Specialist number 16 in the large fixture team
+    instruction: You are agent16.
+    handoffs: [agent23, agent29]
+  agent17:
+    model: fast
+    description: Specialist number 17 in the large fixture team
+    instruction: You are agent17.
+    handoffs: [agent24, agent30]
+  agent18:
+    model: fast
+    description: Specialist number 18 in the large fixture team
+    instruction: You are agent18.
+    handoffs: [agent25, agent31]
+  agent19:
+    model: fast
+    description: Specialist number 19 in the large fixture team
+    instruction: You are agent19.
+    handoffs: [agent26, agent32]
+  agent20:
+    model: fast
+    description: Specialist number 20 in the large fixture team
+    instruction: You are agent20.
+    handoffs: [agent27, agent33]
+  agent21:
+    model: fast
+    description: Specialist number 21 in the large fixture team
+    instruction: You are agent21.
+    handoffs: [agent28, agent34]
+  agent22:
+    model: fast
+    description: Specialist number 22 in the large fixture team
+    instruction: You are agent22.
+    handoffs: [agent29, agent35]
+  agent23:
+    model: fast
+    description: Specialist number 23 in the large fixture team
+    instruction: You are agent23.
+    handoffs: [agent30, agent36]
+  agent24:
+    model: fast
+    description: Specialist number 24 in the large fixture team
+    instruction: You are agent24.
+    handoffs: [agent31, agent37]
+  agent25:
+    model: fast
+    description: Specialist number 25 in the large fixture team
+    instruction: You are agent25.
+    handoffs: [agent32, agent38]
+  agent26:
+    model: fast
+    description: Specialist number 26 in the large fixture team
+    instruction: You are agent26.
+    handoffs: [agent33, agent39]
+  agent27:
+    model: fast
+    description: Specialist number 27 in the large fixture team
+    instruction: You are agent27.
+    handoffs: [agent34, agent40]
+  agent28:
+    model: fast
+    description: Specialist number 28 in the large fixture team
+    instruction: You are agent28.
+    handoffs: [agent35, agent41]
+  agent29:
+    model: fast
+    description: Specialist number 29 in the large fixture team
+    instruction: You are agent29.
+    handoffs: [agent36, agent42]
+  agent30:
+    model: fast
+    description: Specialist number 30 in the large fixture team
+    instruction: You are agent30.
+    handoffs: [agent37, agent43]
+  agent31:
+    model: fast
+    description: Specialist number 31 in the large fixture team
+    instruction: You are agent31.
+    handoffs: [agent38, agent44]
+  agent32:
+    model: fast
+    description: Specialist number 32 in the large fixture team
+    instruction: You are agent32.
+    handoffs: [agent39, agent45]
+  agent33:
+    model: fast
+    description: Specialist number 33 in the large fixture team
+    instruction: You are agent33.
+    handoffs: [agent40, agent46]
+  agent34:
+    model: fast
+    description: Specialist number 34 in the large fixture team
+    instruction: You are agent34.
+    handoffs: [agent41, agent47]
+  agent35:
+    model: fast
+    description: Specialist number 35 in the large fixture team
+    instruction: You are agent35.
+    handoffs: [agent42, agent48]
+  agent36:
+    model: fast
+    description: Specialist number 36 in the large fixture team
+    instruction: You are agent36.
+    handoffs: [agent43, agent49]
+  agent37:
+    model: fast
+    description: Specialist number 37 in the large fixture team
+    instruction: You are agent37.
+    handoffs: [agent44, root]
+  agent38:
+    model: fast
+    description: Specialist number 38 in the large fixture team
+    instruction: You are agent38.
+    handoffs: [agent45, agent01]
+  agent39:
+    model: fast
+    description: Specialist number 39 in the large fixture team
+    instruction: You are agent39.
+    handoffs: [agent46, agent02]
+  agent40:
+    model: fast
+    description: Specialist number 40 in the large fixture team
+    instruction: You are agent40.
+    handoffs: [agent47, agent03]
+  agent41:
+    model: fast
+    description: Specialist number 41 in the large fixture team
+    instruction: You are agent41.
+    handoffs: [agent48, agent04]
+  agent42:
+    model: fast
+    description: Specialist number 42 in the large fixture team
+    instruction: You are agent42.
+    handoffs: [agent49, agent05]
+  agent43:
+    model: fast
+    description: Specialist number 43 in the large fixture team
+    instruction: You are agent43.
+    handoffs: [root, agent06]
+  agent44:
+    model: fast
+    description: Specialist number 44 in the large fixture team
+    instruction: You are agent44.
+    handoffs: [agent01, agent07]
+  agent45:
+    model: fast
+    description: Specialist number 45 in the large fixture team
+    instruction: You are agent45.
+    handoffs: [agent02, agent08]
+  agent46:
+    model: fast
+    description: Specialist number 46 in the large fixture team
+    instruction: You are agent46.
+    handoffs: [agent03, agent09]
+  agent47:
+    model: fast
+    description: Specialist number 47 in the large fixture team
+    instruction: You are agent47.
+    handoffs: [agent04, agent10]
+  agent48:
+    model: fast
+    description: Specialist number 48 in the large fixture team
+    instruction: You are agent48.
+    handoffs: [agent05, agent11]
+  agent49:
+    model: fast
+    description: Specialist number 49 in the large fixture team
+    instruction: You are agent49.
+    handoffs: [agent06, agent12]
+    force_handoff: agent01

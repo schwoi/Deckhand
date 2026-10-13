@@ -47,6 +47,14 @@ function semanticIssues(doc: Obj): ValidationIssue[] {
           issues.push({ path: `${base}.${field}.${i}`, message: `unknown agent: ${ref}` })
       })
     }
+    // Docker Agent refuses to load these; force_handoff cycles are reported below.
+    const forced = agent.force_handoff
+    if (typeof forced === 'string' && !forced.includes('/') && !forced.includes(':')) {
+      if (forced === name)
+        issues.push({ path: `${base}.force_handoff`, message: 'cannot force_handoff to itself' })
+      else if (!Object.hasOwn(agents, forced))
+        issues.push({ path: `${base}.force_handoff`, message: `unknown agent: ${forced}` })
+    }
     const model = agent.model
     if (typeof model === 'string') {
       // comma-separated lists are allowed (alloy models); each entry must resolve
@@ -80,6 +88,21 @@ function semanticIssues(doc: Obj): ValidationIssue[] {
         if (!defined.has(ref))
           issues.push({ path: `${base}.${field}.${i}`, message: `unknown ${label}: ${ref}` })
       })
+    }
+  }
+  const forcedTo = (n: string) => {
+    const a = agents[n]
+    return isObj(a) && typeof a.force_handoff === 'string' ? a.force_handoff : undefined
+  }
+  for (const name of agentNames) {
+    const seen = new Set([name])
+    for (let n = forcedTo(name); n && n !== name && Object.hasOwn(agents, n); n = forcedTo(n)) {
+      if (seen.has(n)) break
+      seen.add(n)
+      if (forcedTo(n) === name) {
+        issues.push({ path: `agents.${name}.force_handoff`, message: 'force_handoff cycle' })
+        break
+      }
     }
   }
   return issues

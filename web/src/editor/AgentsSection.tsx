@@ -1,5 +1,7 @@
+import { removeAgent, renameAgent } from '@shared/agent-refs'
 import type { AgentConfig, AgentFile, Json } from '@shared/config'
 import { SAFETY_MODES } from '@shared/config'
+import { defaultEntry } from '@shared/topology'
 import { Plus, Trash2 } from 'lucide-react'
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 import { Button } from '../components/ui/Button'
@@ -9,7 +11,7 @@ import { confirmDialog } from '../components/ui/Dialog'
 import { Field, Input, NumberInput, Select, Switch, Textarea } from '../components/ui/form'
 import { KeyValueEditor, TagInput } from '../components/ui/lists'
 import { Badge, Code, Disclosure } from '../components/ui/misc'
-import { NAME_RE, cn, omitKey, renameKey, uniqueKey, withField } from '../lib/util'
+import { NAME_RE, cn, uniqueKey, withField } from '../lib/util'
 import { ToolsetList } from './Toolsets'
 import { SAFETY_INFO } from './catalog'
 import { useDoctor } from './hooks'
@@ -17,6 +19,20 @@ import { useDoctor } from './hooks'
 export function orderedAgentNames(config: AgentFile): string[] {
   const names = Object.keys(config.agents ?? {})
   return names.includes('root') ? ['root', ...names.filter((n) => n !== 'root')] : names
+}
+
+/** Name and body for a new agent: `root` first, then `agent`, `agent2`…, with the entry's model. */
+export function newAgentDefaults(config: AgentFile): { name: string; agent: AgentConfig } {
+  const names = orderedAgentNames(config)
+  const name = uniqueKey(names, names.length === 0 ? 'root' : 'agent')
+  const model = config.agents?.[names[0] ?? '']?.model
+  return { name, agent: model ? { model } : {} }
+}
+
+/** Why `name` can't be used for an agent, if it can't. */
+export function agentNameError(config: AgentFile, name: string): string | undefined {
+  if (!NAME_RE.test(name)) return 'Invalid name'
+  if (Object.hasOwn(config.agents ?? {}, name)) return 'Name already used'
 }
 
 export function AgentsSection({
@@ -33,6 +49,7 @@ export function AgentsSection({
   const agents = config.agents ?? {}
   const names = orderedAgentNames(config)
   const current = names.includes(selected) ? selected : names[0]
+  const entry = defaultEntry(Object.keys(agents))
   const tabs = useRef<HTMLDivElement>(null)
   // biome-ignore lint/correctness/useExhaustiveDependencies: keep the selected tab in view when it changes
   useEffect(() => {
@@ -42,9 +59,8 @@ export function AgentsSection({
   }, [current])
 
   const add = () => {
-    const name = uniqueKey(names, names.length === 0 ? 'root' : 'agent')
-    const model = agents[names[0] ?? '']?.model
-    onChange({ ...config, agents: { ...agents, [name]: model ? { model } : {} } })
+    const { name, agent } = newAgentDefaults(config)
+    onChange({ ...config, agents: { ...agents, [name]: agent } })
     onSelect(name)
   }
 
@@ -71,7 +87,7 @@ export function AgentsSection({
             )}
           >
             {n}
-            {n === 'root' && <span className="font-sans text-2xs opacity-70">entry</span>}
+            {n === entry && <span className="font-sans text-2xs opacity-70">entry</span>}
           </button>
         ))}
         <Button size="sm" variant="ghost" icon={<Plus />} onClick={add}>
@@ -85,6 +101,7 @@ export function AgentsSection({
           config={config}
           onChange={onChange}
           onRenamed={onSelect}
+          entry={current === entry}
         />
       ) : (
         <p className="text-muted">No agents defined.</p>
@@ -93,16 +110,21 @@ export function AgentsSection({
   )
 }
 
-function AgentForm({
+export function AgentForm({
   name,
   config,
   onChange,
   onRenamed,
+  onRemoved,
+  entry,
 }: {
   name: string
   config: AgentFile
   onChange: (c: AgentFile) => void
   onRenamed: (n: string) => void
+  /** called after removal; defaults to selecting the first remaining agent via onRenamed */
+  onRemoved?: () => void
+  entry?: boolean
 }) {
   const agents = config.agents
   const agent: AgentConfig = agents[name] ?? {}
@@ -117,56 +139,29 @@ function AgentForm({
 
   const [draftName, setDraftName] = useState(name)
   useEffect(() => setDraftName(name), [name])
-  const nameErr =
-    draftName === name
-      ? undefined
-      : !NAME_RE.test(draftName)
-        ? 'Invalid name'
-        : others.includes(draftName)
-          ? 'Name already used'
-          : undefined
+  const nameErr = draftName === name ? undefined : agentNameError(config, draftName)
   const commitRename = () => {
     if (draftName === name || nameErr) {
       setDraftName(name)
       return
     }
-    const rewrite = (list: string[] | undefined) => list?.map((x) => (x === name ? draftName : x))
-    const renamed = renameKey(agents, name, draftName)
-    for (const [k, a] of Object.entries(renamed)) {
-      renamed[k] = {
-        ...a,
-        ...(a.sub_agents && { sub_agents: rewrite(a.sub_agents) }),
-        ...(a.handoffs && { handoffs: rewrite(a.handoffs) }),
-      }
-    }
-    onChange({ ...config, agents: renamed })
+    onChange(renameAgent(config, name, draftName))
     onRenamed(draftName)
   }
 
   const remove = async () => {
     const ok = await confirmDialog({
       title: `Remove agent ${name}?`,
-      message: 'References to it in sub_agents and handoffs are removed too.',
+      message:
+        'References to it in sub_agents, handoffs, force_handoff and routing are removed too.',
       confirmLabel: 'Remove',
       danger: true,
     })
     if (!ok) return
-    const rest = omitKey(agents, name)
-    for (const [k, a] of Object.entries(rest)) {
-      let next = withField(
-        a,
-        'sub_agents',
-        a.sub_agents?.filter((x) => x !== name),
-      )
-      next = withField(
-        next,
-        'handoffs',
-        next.handoffs?.filter((x) => x !== name),
-      )
-      rest[k] = next
-    }
-    onChange({ ...config, agents: rest })
-    onRenamed(Object.keys(rest)[0] ?? '')
+    const next = removeAgent(config, name)
+    onChange(next)
+    if (onRemoved) onRemoved()
+    else onRenamed(Object.keys(next.agents)[0] ?? '')
   }
 
   // Only what this file configures, plus `auto` (docker-agent picks at runtime). Inline
@@ -220,7 +215,7 @@ function AgentForm({
               }}
             />
           </Field>
-          {name === 'root' && (
+          {entry && (
             <span className="pb-2 text-sm text-faint">
               <Badge tone="accent">entry point</Badge>
             </span>
@@ -332,6 +327,19 @@ function AgentForm({
             onChange={(v) => set('handoffs', v)}
             suggestions={agentOptions}
             placeholder="Add agent…"
+          />
+        </Field>
+        <Field
+          label="Forced handoff"
+          path={`${path}.force_handoff`}
+          help="Always receives the conversation when this agent gives its final answer."
+        >
+          <Combobox
+            mono
+            value={agent.force_handoff ?? ''}
+            onChange={(v) => set('force_handoff', v.trim() || undefined)}
+            options={agentOptions}
+            placeholder="none"
           />
         </Field>
       </section>
