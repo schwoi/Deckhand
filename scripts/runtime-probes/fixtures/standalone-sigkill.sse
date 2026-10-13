@@ -1,0 +1,36 @@
+data: {"agent_name":"root","timestamp":"2026-10-13T21:31:35.577774842+11:00","type":"team_info","available_agents":[{"name":"root","description":"","provider":"github-copilot","model":"gpt-5.4-nano","thinking":"off","execution_capabilities":{"mode":"native","tool_execution":"docker-agent","tool_approval":"docker-agent-policy","budget_supported":true,"compaction_supported":true,"mid_turn_steering_supported":true,"prompt_hook_context_supported":true}}],"current_agent":"root"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:31:35.57783288+11:00","type":"mcp_init_started"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:31:35.578458233+11:00","type":"mcp_init_finished"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:31:35.578459393+11:00","type":"toolset_info","available_tools":1,"loading":false}
+
+data: {"timestamp":"2026-10-13T21:31:35.578493195+11:00","type":"user_message","message":"Run sigkill.","session_id":"d41f8902-ed56-415e-9deb-58234aa8a94b","session_position":0}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:31:35.578495107+11:00","type":"stream_started","session_id":"d41f8902-ed56-415e-9deb-58234aa8a94b"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:31:35.578499368+11:00","type":"mcp_init_started"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:31:35.578789959+11:00","type":"mcp_init_finished"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:31:35.578790658+11:00","type":"toolset_info","available_tools":1,"loading":false}
+
+data: {"timestamp":"2026-10-13T21:31:35.578795627+11:00","type":"agent_info","agent_name":"root","model":"github-copilot/gpt-5.4-nano","description":""}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:31:36.720886265+11:00","type":"partial_tool_call","tool_call":{"id":"call_922Zodf9hl9NBrjLYW4OILyz","type":"function","function":{"name":"shell"}},"tool_definition":{"name":"shell","category":"shell","description":"Executes the given shell command with bash on Linux. If unsure which shell syntax to use, call get_environment_info first.","parameters":{"additionalProperties":false,"properties":{"cmd":{"description":"Shell command","type":"string"},"cwd":{"description":"Working directory (default \".\")","type":"string"},"timeout":{"description":"Timeout in seconds (default 30)","type":"integer"}},"required":["cmd"],"type":"object"},"annotations":{"idempotentHint":false,"readOnlyHint":false,"title":"Shell"},"outputSchema":{"type":"string"}}}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:31:36.944913806+11:00","type":"partial_tool_call","tool_call":{"id":"call_922Zodf9hl9NBrjLYW4OILyz","type":"function","function":{"name":"shell","arguments":"{\"cmd\":\"sleep 60\",\"cwd\":null,\"timeout\":30}"}}}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:31:36.945250964+11:00","type":"message_added","session_id":"d41f8902-ed56-415e-9deb-58234aa8a94b","assistant_message_empty":true,"has_tool_calls":true}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:31:36.945256283+11:00","type":"token_usage","session_id":"d41f8902-ed56-415e-9deb-58234aa8a94b","usage":{"input_tokens":214,"output_tokens":27,"context_length":241,"context_limit":400000,"cost":0.00007655000000000002,"last_message":{"input_tokens":214,"output_tokens":27,"cached_input_tokens":0,"cached_write_tokens":0,"service_tier":"default","Cost":0.00007655000000000002,"Model":"github-copilot/gpt-5.4-nano","finish_reason":"tool_calls"}}}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:31:36.945359969+11:00","type":"hook_started","session_id":"d41f8902-ed56-415e-9deb-58234aa8a94b","hook_event":"tool_input_transform"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:31:36.945501835+11:00","type":"hook_finished","session_id":"d41f8902-ed56-415e-9deb-58234aa8a94b","hook_event":"tool_input_transform","duration_ms":0,"allowed":true}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:31:36.951134855+11:00","type":"tool_call","tool_call":{"id":"call_922Zodf9hl9NBrjLYW4OILyz","type":"function","function":{"name":"shell","arguments":"{\"cmd\":\"sleep 60\",\"cwd\":null,\"timeout\":30}"}},"tool_definition":{"name":"shell","category":"shell","description":"Executes the given shell command with bash on Linux. If unsure which shell syntax to use, call get_environment_info first.","parameters":{"additionalProperties":false,"properties":{"cmd":{"description":"Shell command","type":"string"},"cwd":{"description":"Working directory (default \".\")","type":"string"},"timeout":{"description":"Timeout in seconds (default 30)","type":"integer"}},"required":["cmd"],"type":"object"},"annotations":{"idempotentHint":false,"readOnlyHint":false,"title":"Shell"},"outputSchema":{"type":"string"}}}
+
+data: {"timestamp":"0001-01-01T00:00:00Z","type":"session_title","session_id":"d41f8902-ed56-415e-9deb-58234aa8a94b","title":"Run SIGKILL Command"}
+

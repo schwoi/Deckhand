@@ -23,6 +23,7 @@ Always set env `DOCKER_AGENT_HIDE_TELEMETRY_BANNER=1` when spawning it.
 - `GET /api/sessions` → `[{id, title, created_at, num_messages, input_tokens, output_tokens}]`; `?active=true` only attached runtimes
 - `POST /api/sessions` body `{title?, working_dir?, safety_policy?}` → `{id, title, created_at, messages, tools_approved, input_tokens, output_tokens, cost, ...}`
 - `GET /api/sessions/:id` → session with `messages: [{agent_name, message:{message_id, role, content, reasoning_content?, tool_calls?, tool_call_id?}}]`, `tools_approved`, tokens
+- `GET /api/sessions/:id/snapshot` → persisted state plus `streaming` and `last_event_seq`
 - `DELETE /api/sessions/:id` → 204
 - `PATCH /api/sessions/:id/title` body `{title}`
 - `POST /api/sessions/:id/agent/:agentId[/:subAgentName]` body `{messages:[{role:'user', content}], model?}` → **SSE stream** (`data: {json}` lines)
@@ -43,12 +44,25 @@ Always set env `DOCKER_AGENT_HIDE_TELEMETRY_BANNER=1` when spawning it.
 | `partial_tool_call` | `tool_call:{id, function:{name, arguments}}` (arguments accumulate) |
 | `tool_call` | `tool_call:{id, type, function:{name, arguments}}`, `tool_definition` |
 | `tool_call_confirmation` | same as tool_call; **the stream pauses until POST /resume** |
-| `tool_call_response` | `tool_call_id`, `tool_definition`, `response` (string), `result?` |
-| `token_usage` | `usage:{input_tokens, output_tokens, context_length, context_limit, cost}` |
+| `tool_call_output` / `tool_call_response` | `tool_call_id`, tool definition, raw output/response, `result?` |
+| `token_usage` | Per-call `input_tokens`, `output_tokens`, `context_length`, and `last_message`; cumulative session `cost`; parent frames exclude child sessions |
 | `session_title` | `title` |
 | `budget_usage` / `budget_exceeded` | budget info |
 | `elicitation_request` | MCP elicitation (answer via POST /elicitation) |
 | `error` | `error` (string), `code?` |
 | `stream_stopped` | `session_id`, `reason?` (`max_iterations`), `finish_reason?` |
+| `team_info` / `agent_info` / `toolset_info` | team, selected model, and available-tool metadata |
+| `mcp_init_started` / `mcp_init_finished` | toolset initialization lifecycle |
+| `hook_started` / `hook_finished` | hook lifecycle and duration/allow result |
+| `message_added` | a message was persisted; may flag an empty assistant tool-call message |
+| `agent_switching` | `from_agent`, `to_agent`, `switching` around delegation |
+| `sub_session_completed` | explicit `parent_session_id` and embedded `sub_session` snapshot |
 
-Sub-agent activity arrives on the same stream with a different `agent` / `session_id`.
+Sub-agent activity arrives on the same stream with a different `agent_name` / `session_id`.
+Sum token fields across frames per session, but keep the latest `cost` (or sum
+`last_message.Cost`). `GET /sessions/:id` retains only the latest call's token
+fields and omits cost. `budget_usage` is cumulative across the run and includes
+`per_agent` and child-session totals. Token budgets are checked at turn boundaries
+and may overshoot during an in-flight call. Dropping the POST/SSE client cancels
+an active turn/tool. Snapshots reconcile persisted state, but
+`GET .../events?after=0` returned no event source both active and inactive.

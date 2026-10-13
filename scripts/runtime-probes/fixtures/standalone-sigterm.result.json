@@ -1,0 +1,8 @@
+{
+  "signal": "TERM",
+  "launch_mode": "inherited",
+  "signal_target": "plugin_pid",
+  "plugin_pgid": "300217",
+  "sleep_pid": "300397",
+  "descendant_survived": false
+}

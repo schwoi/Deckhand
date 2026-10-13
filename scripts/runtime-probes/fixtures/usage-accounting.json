@@ -1,0 +1,125 @@
+{
+  "root": {
+    "session_id": "f2774237-ed10-4777-b91d-61c94eb1643f",
+    "calls": [
+      {
+        "input_tokens": 356,
+        "output_tokens": 85,
+        "context_length": 441,
+        "context_limit": 400000,
+        "cost": 0.00017744999999999998,
+        "last_message": {
+          "input_tokens": 356,
+          "output_tokens": 85,
+          "cached_input_tokens": 0,
+          "cached_write_tokens": 0,
+          "service_tier": "default",
+          "Cost": 0.00017744999999999998,
+          "Model": "github-copilot/gpt-5.4-nano",
+          "finish_reason": "tool_calls"
+        }
+      },
+      {
+        "input_tokens": 455,
+        "output_tokens": 57,
+        "context_length": 512,
+        "context_limit": 400000,
+        "cost": 0.00033969999999999996,
+        "last_message": {
+          "input_tokens": 455,
+          "output_tokens": 57,
+          "cached_input_tokens": 0,
+          "cached_write_tokens": 0,
+          "service_tier": "default",
+          "Cost": 0.00016225,
+          "Model": "github-copilot/gpt-5.4-nano",
+          "finish_reason": "stop"
+        }
+      }
+    ],
+    "derived": {
+      "input_tokens": 811,
+      "output_tokens": 142,
+      "tokens": 953,
+      "cost": 0.00033969999999999996,
+      "latest_cost": 0.00033969999999999996
+    },
+    "session_get": {
+      "input_tokens": 455,
+      "output_tokens": 57,
+      "cost": null
+    }
+  },
+  "child": {
+    "session_id": "c09a9d57-478d-4f5e-a204-4ce3b7491404",
+    "calls": [
+      {
+        "input_tokens": 378,
+        "output_tokens": 31,
+        "context_length": 409,
+        "context_limit": 400000,
+        "cost": 0.00011435000000000001,
+        "last_message": {
+          "input_tokens": 378,
+          "output_tokens": 31,
+          "cached_input_tokens": 0,
+          "cached_write_tokens": 0,
+          "service_tier": "default",
+          "Cost": 0.00011435000000000001,
+          "Model": "github-copilot/gpt-5.4-nano",
+          "finish_reason": "tool_calls"
+        }
+      },
+      {
+        "input_tokens": 423,
+        "output_tokens": 7,
+        "context_length": 430,
+        "context_limit": 400000,
+        "cost": 0.0002077,
+        "last_message": {
+          "input_tokens": 423,
+          "output_tokens": 7,
+          "cached_input_tokens": 0,
+          "cached_write_tokens": 0,
+          "service_tier": "default",
+          "Cost": 0.00009335,
+          "Model": "github-copilot/gpt-5.4-nano",
+          "finish_reason": "stop"
+        }
+      }
+    ],
+    "derived": {
+      "input_tokens": 801,
+      "output_tokens": 38,
+      "tokens": 839,
+      "cost": 0.0002077,
+      "latest_cost": 0.0002077
+    },
+    "session_get": {
+      "input_tokens": 423,
+      "output_tokens": 7,
+      "cost": null
+    }
+  },
+  "final_budget": {
+    "name": "run",
+    "cost": 0.0005474,
+    "tokens": 1792,
+    "max_tokens": 100000,
+    "elapsed_seconds": 5.668960802,
+    "per_agent": [
+      {
+        "agent_name": "root",
+        "cost": 0.00033969999999999996,
+        "tokens": 953,
+        "active_seconds": 3.383522553
+      },
+      {
+        "agent_name": "worker",
+        "cost": 0.0002077,
+        "tokens": 839,
+        "active_seconds": 2.285438249
+      }
+    ]
+  }
+}

@@ -1,0 +1,217 @@
+{
+  "request": "GET /api/sessions/:id/events?after=0",
+  "active": {
+    "snapshot": {
+      "id": "8d31cf1d-bf11-4eae-b439-cba2703d6971",
+      "title": "Run Snapshot and Event-Source Probe",
+      "created_at": "2026-10-13T21:31:12+11:00",
+      "working_dir": "/tmp/deckhand-runtime-probe.REDACTED/work",
+      "messages": [
+        {
+          "agent_name": "",
+          "message": {
+            "role": "user",
+            "content": "Run the snapshot and event-source probe.",
+            "created_at": "2026-10-13T21:31:12+11:00"
+          }
+        },
+        {
+          "agent_name": "root",
+          "message": {
+            "message_id": "a4a62993-2d67-4112-b53d-d29f1d4ebb87",
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+              {
+                "id": "call_HCTHpXp4Ok5uvLCa2ZkGI5mp",
+                "type": "function",
+                "function": {
+                  "name": "shell",
+                  "arguments": "{\"cmd\":\"sleep 4; printf replay-done > replay-result.txt\",\"cwd\":null,\"timeout\":30}"
+                }
+              }
+            ],
+            "tool_definitions": [
+              {
+                "name": "shell",
+                "category": "shell",
+                "description": "Executes the given shell command with bash on Linux. If unsure which shell syntax to use, call get_environment_info first.",
+                "parameters": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cmd": {
+                      "description": "Shell command",
+                      "type": "string"
+                    },
+                    "cwd": {
+                      "description": "Working directory (default \".\")",
+                      "type": "string"
+                    },
+                    "timeout": {
+                      "description": "Timeout in seconds (default 30)",
+                      "type": "integer"
+                    }
+                  },
+                  "required": ["cmd"],
+                  "type": "object"
+                },
+                "annotations": {
+                  "idempotentHint": false,
+                  "readOnlyHint": false,
+                  "title": "Shell"
+                },
+                "outputSchema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "created_at": "2026-10-13T21:31:13+11:00",
+            "usage": {
+              "input_tokens": 227,
+              "output_tokens": 36,
+              "cached_input_tokens": 0,
+              "cached_write_tokens": 0,
+              "service_tier": "default"
+            },
+            "model": "github-copilot/gpt-5.4-nano",
+            "cost": 0.0000904,
+            "finish_reason": "tool_calls"
+          }
+        }
+      ],
+      "tools_approved": true,
+      "safety_policy": "autonomous",
+      "input_tokens": 227,
+      "output_tokens": 36,
+      "streaming": true,
+      "agent": "root",
+      "last_event_seq": 0,
+      "cost": 0.0000904
+    },
+    "events": {
+      "http_status": "404",
+      "body": "{\"message\":\"no event source for session\"}"
+    }
+  },
+  "inactive": {
+    "snapshot": {
+      "id": "8d31cf1d-bf11-4eae-b439-cba2703d6971",
+      "title": "Run Snapshot and Event-Source Probe",
+      "created_at": "2026-10-13T21:31:12+11:00",
+      "working_dir": "/tmp/deckhand-runtime-probe.REDACTED/work",
+      "messages": [
+        {
+          "agent_name": "",
+          "message": {
+            "role": "user",
+            "content": "Run the snapshot and event-source probe.",
+            "created_at": "2026-10-13T21:31:12+11:00"
+          }
+        },
+        {
+          "agent_name": "root",
+          "message": {
+            "message_id": "a4a62993-2d67-4112-b53d-d29f1d4ebb87",
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+              {
+                "id": "call_HCTHpXp4Ok5uvLCa2ZkGI5mp",
+                "type": "function",
+                "function": {
+                  "name": "shell",
+                  "arguments": "{\"cmd\":\"sleep 4; printf replay-done > replay-result.txt\",\"cwd\":null,\"timeout\":30}"
+                }
+              }
+            ],
+            "tool_definitions": [
+              {
+                "name": "shell",
+                "category": "shell",
+                "description": "Executes the given shell command with bash on Linux. If unsure which shell syntax to use, call get_environment_info first.",
+                "parameters": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cmd": {
+                      "description": "Shell command",
+                      "type": "string"
+                    },
+                    "cwd": {
+                      "description": "Working directory (default \".\")",
+                      "type": "string"
+                    },
+                    "timeout": {
+                      "description": "Timeout in seconds (default 30)",
+                      "type": "integer"
+                    }
+                  },
+                  "required": ["cmd"],
+                  "type": "object"
+                },
+                "annotations": {
+                  "idempotentHint": false,
+                  "readOnlyHint": false,
+                  "title": "Shell"
+                },
+                "outputSchema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "created_at": "2026-10-13T21:31:13+11:00",
+            "usage": {
+              "input_tokens": 227,
+              "output_tokens": 36,
+              "cached_input_tokens": 0,
+              "cached_write_tokens": 0,
+              "service_tier": "default"
+            },
+            "model": "github-copilot/gpt-5.4-nano",
+            "cost": 0.0000904,
+            "finish_reason": "tool_calls"
+          }
+        },
+        {
+          "agent_name": "root",
+          "message": {
+            "role": "tool",
+            "content": "<no output>",
+            "tool_call_id": "call_HCTHpXp4Ok5uvLCa2ZkGI5mp",
+            "created_at": "2026-10-13T21:31:17+11:00"
+          }
+        },
+        {
+          "agent_name": "root",
+          "message": {
+            "message_id": "0451efda-595f-47d6-97e8-54ef0b6d4de2",
+            "role": "assistant",
+            "content": "DONE",
+            "created_at": "2026-10-13T21:31:18+11:00",
+            "usage": {
+              "input_tokens": 277,
+              "output_tokens": 5,
+              "cached_input_tokens": 0,
+              "cached_write_tokens": 0,
+              "service_tier": "default"
+            },
+            "model": "github-copilot/gpt-5.4-nano",
+            "cost": 0.00006165000000000001,
+            "finish_reason": "stop"
+          }
+        }
+      ],
+      "tools_approved": true,
+      "safety_policy": "autonomous",
+      "input_tokens": 277,
+      "output_tokens": 5,
+      "streaming": false,
+      "agent": "root",
+      "last_event_seq": 0,
+      "cost": 0.00015205
+    },
+    "events": {
+      "http_status": "404",
+      "body": "{\"message\":\"no event source for session\"}"
+    }
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "tables": [
+    "generated_media_blobs",
+    "generated_media_manifest",
+    "migrations",
+    "session_items",
+    "sessions",
+    "sqlite_sequence"
+  ],
+  "session_items": [
+    {
+      "id": 1,
+      "session_id": "4f706421-c88f-4a6e-82da-108fd45fddcd",
+      "position": 0,
+      "item_type": "message",
+      "agent_name": "",
+      "message_json": "{\"role\":\"user\",\"content\":\"Run sigkill-detached.\",\"created_at\":\"2026-10-13T21:31:38+11:00\"}",
+      "implicit": 0,
+      "subsession_id": null,
+      "summary_text": null,
+      "first_kept_entry": 0,
+      "cost": 0,
+      "model": "",
+      "usage_json": ""
+    },
+    {
+      "id": 2,
+      "session_id": "4f706421-c88f-4a6e-82da-108fd45fddcd",
+      "position": 1,
+      "item_type": "message",
+      "agent_name": "root",
+      "message_json": "{\"message_id\":\"07c49182-2762-46dc-8ab0-6491f0f234a1\",\"role\":\"assistant\",\"content\":\"\",\"tool_calls\":[{\"id\":\"call_CZbTEFmdgI2TnG4pPCm0lvD0\",\"type\":\"function\",\"function\":{\"name\":\"shell\",\"arguments\":\"{\\\"cmd\\\":\\\"sleep 60\\\",\\\"cwd\\\":null,\\\"timeout\\\":60}\"}}],\"tool_definitions\":[{\"name\":\"shell\",\"category\":\"shell\",\"description\":\"Executes the given shell command with bash on Linux. If unsure which shell syntax to use, call get_environment_info first.\",\"parameters\":{\"additionalProperties\":false,\"properties\":{\"cmd\":{\"description\":\"Shell command\",\"type\":\"string\"},\"cwd\":{\"description\":\"Working directory (default \\\".\\\")\",\"type\":\"string\"},\"timeout\":{\"description\":\"Timeout in seconds (default 30)\",\"type\":\"integer\"}},\"required\":[\"cmd\"],\"type\":\"object\"},\"annotations\":{\"idempotentHint\":false,\"readOnlyHint\":false,\"title\":\"Shell\"},\"outputSchema\":{\"type\":\"string\"}}],\"created_at\":\"2026-10-13T21:31:40+11:00\",\"usage\":{\"input_tokens\":216,\"output_tokens\":27,\"cached_input_tokens\":0,\"cached_write_tokens\":0,\"service_tier\":\"default\"},\"model\":\"github-copilot/gpt-5.4-nano\",\"cost\":0.00007695,\"finish_reason\":\"tool_calls\"}",
+      "implicit": 0,
+      "subsession_id": null,
+      "summary_text": null,
+      "first_kept_entry": 0,
+      "cost": 0,
+      "model": "",
+      "usage_json": ""
+    }
+  ],
+  "sessions": [
+    {
+      "id": "4f706421-c88f-4a6e-82da-108fd45fddcd",
+      "created_at": "2026-10-13T21:31:38+11:00",
+      "tools_approved": 1,
+      "input_tokens": 216,
+      "output_tokens": 27,
+      "title": "Run sigkill-detached command",
+      "cost": 0.00007695,
+      "send_user_message": 1,
+      "max_iterations": 0,
+      "working_dir": "/tmp/deckhand-runtime-probe.REDACTED/work",
+      "starred": 0,
+      "permissions": "",
+      "agent_model_overrides": "{}",
+      "custom_models_used": "[]",
+      "thinking": 0,
+      "parent_id": null,
+      "instruction_context": "",
+      "safety_policy": "autonomous",
+      "attributes": "{}",
+      "origin": "run"
+    }
+  ]
+}

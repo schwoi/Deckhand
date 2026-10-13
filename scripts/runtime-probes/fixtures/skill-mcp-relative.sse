@@ -1,0 +1,202 @@
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:53.146068681+11:00","type":"team_info","available_agents":[{"name":"root","description":"","provider":"github-copilot","model":"gpt-5.4-nano","thinking":"off","execution_capabilities":{"mode":"native","tool_execution":"docker-agent","tool_approval":"docker-agent-policy","budget_supported":true,"compaction_supported":true,"mid_turn_steering_supported":true,"prompt_hook_context_supported":true}}],"current_agent":"root"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:53.14608568+11:00","type":"mcp_init_started"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:53.15135402+11:00","type":"mcp_init_finished"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:53.151373663+11:00","type":"toolset_info","available_tools":1,"loading":false}
+
+data: {"timestamp":"2026-10-13T21:38:53.151414217+11:00","type":"user_message","message":"Use origin skill and MCP origin.","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","session_position":0}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:53.151416368+11:00","type":"stream_started","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:53.151421592+11:00","type":"warning","message":"Some toolsets failed to initialize for agent 'root'.\n\nDetails:\n\n- mcp(stdio cmd=bun args_len=1) start failed: failed to initialize MCP client: connection closed: calling \"initialize\": client is closing: EOF"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:53.151422055+11:00","type":"mcp_init_started"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:53.155171554+11:00","type":"mcp_init_finished"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:53.155175247+11:00","type":"toolset_info","available_tools":1,"loading":false}
+
+data: {"timestamp":"2026-10-13T21:38:53.155179065+11:00","type":"agent_info","agent_name":"root","model":"github-copilot/gpt-5.4-nano","description":""}
+
+data: {"timestamp":"0001-01-01T00:00:00Z","type":"session_title","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","title":"Using Origin Skill and MCP Origin"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:54.939955479+11:00","type":"partial_tool_call","tool_call":{"id":"call_SlSioY9xzPV3yiiEm1VxETqj","type":"function","function":{"name":"read_skill"}},"tool_definition":{"name":"read_skill","category":"skills","description":"Read the content of a skill by name. Use this when a user's request matches an available skill.","parameters":{"additionalProperties":false,"properties":{"name":{"description":"The name of the skill to read","type":"string"}},"required":["name"],"type":"object"},"annotations":{"idempotentHint":false,"readOnlyHint":true,"title":"Read Skill"},"outputSchema":{"type":"string"}}}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:55.158767194+11:00","type":"partial_tool_call","tool_call":{"id":"call_SlSioY9xzPV3yiiEm1VxETqj","type":"function","function":{"name":"read_skill","arguments":"{\"name\":\"origin\"}"}}}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:55.159206898+11:00","type":"message_added","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","assistant_message_empty":true,"has_tool_calls":true}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:55.159210791+11:00","type":"token_usage","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","usage":{"input_tokens":2095,"output_tokens":18,"context_length":2113,"context_limit":400000,"cost":0.00016502000000000002,"last_message":{"input_tokens":559,"output_tokens":18,"cached_input_tokens":1536,"cached_write_tokens":0,"service_tier":"default","Cost":0.00016502000000000002,"Model":"github-copilot/gpt-5.4-nano","finish_reason":"tool_calls"}}}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:55.159265412+11:00","type":"hook_started","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","hook_event":"tool_input_transform"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:55.159339191+11:00","type":"hook_finished","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","hook_event":"tool_input_transform","duration_ms":0,"allowed":true}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:55.159361401+11:00","type":"tool_call","tool_call":{"id":"call_SlSioY9xzPV3yiiEm1VxETqj","type":"function","function":{"name":"read_skill","arguments":"{\"name\":\"origin\"}"}},"tool_definition":{"name":"read_skill","category":"skills","description":"Read the content of a skill by name. Use this when a user's request matches an available skill.","parameters":{"additionalProperties":false,"properties":{"name":{"description":"The name of the skill to read","type":"string"}},"required":["name"],"type":"object"},"annotations":{"idempotentHint":false,"readOnlyHint":true,"title":"Read Skill"},"outputSchema":{"type":"string"}}}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:55.159385791+11:00","type":"hook_started","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","hook_event":"tool_response_transform"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:55.159450226+11:00","type":"hook_finished","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","hook_event":"tool_response_transform","duration_ms":0,"allowed":true}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:55.159450956+11:00","type":"tool_call_response","tool_call_id":"call_SlSioY9xzPV3yiiEm1VxETqj","tool_definition":{"name":"read_skill","category":"skills","description":"Read the content of a skill by name. Use this when a user's request matches an available skill.","parameters":{"additionalProperties":false,"properties":{"name":{"description":"The name of the skill to read","type":"string"}},"required":["name"],"type":"object"},"annotations":{"idempotentHint":false,"readOnlyHint":true,"title":"Read Skill"},"outputSchema":{"type":"string"}},"response":"skill \"origin\" not found","result":{"output":"skill \"origin\" not found","isError":true}}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:55.159454425+11:00","type":"message_added","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:55.163554075+11:00","type":"mcp_init_started"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:55.167407249+11:00","type":"mcp_init_finished"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:55.167408318+11:00","type":"toolset_info","available_tools":1,"loading":false}
+
+data: {"timestamp":"2026-10-13T21:38:55.16742643+11:00","type":"agent_info","agent_name":"root","model":"github-copilot/gpt-5.4-nano","description":""}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:55.90086042+11:00","type":"agent_choice","content":"I","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:55.900863237+11:00","type":"agent_choice","content":" tried","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:55.901059945+11:00","type":"agent_choice","content":" to","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:55.907422034+11:00","type":"agent_choice","content":" read","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:55.907423238+11:00","type":"agent_choice","content":" the","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:55.907423799+11:00","type":"agent_choice","content":" **","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:55.914868771+11:00","type":"agent_choice","content":"origin","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:55.943486695+11:00","type":"agent_choice","content":" skill","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:55.955896194+11:00","type":"agent_choice","content":"**,","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:55.955897979+11:00","type":"agent_choice","content":" but","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:55.955898697+11:00","type":"agent_choice","content":" the","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:55.958826759+11:00","type":"agent_choice","content":" skill","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:55.962901658+11:00","type":"agent_choice","content":" name","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:55.962903051+11:00","type":"agent_choice","content":" **","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:55.962903586+11:00","type":"agent_choice","content":"“","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:55.970848787+11:00","type":"agent_choice","content":"origin","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:55.971176303+11:00","type":"agent_choice","content":"”","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:55.991320123+11:00","type":"agent_choice","content":"**","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:55.991532308+11:00","type":"agent_choice","content":" is","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.119826341+11:00","type":"agent_choice","content":" **","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.119829646+11:00","type":"agent_choice","content":"not","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.119830868+11:00","type":"agent_choice","content":" found","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.120045685+11:00","type":"agent_choice","content":"**","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.120047074+11:00","type":"agent_choice","content":" in","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.12004755+11:00","type":"agent_choice","content":" the","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.120219475+11:00","type":"agent_choice","content":" available","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.120220657+11:00","type":"agent_choice","content":" skills","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.120463614+11:00","type":"agent_choice","content":" list","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.120464532+11:00","type":"agent_choice","content":" in","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.120624088+11:00","type":"agent_choice","content":" this","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.120624779+11:00","type":"agent_choice","content":" workspace","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.120631399+11:00","type":"agent_choice","content":".\n\n","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.12072851+11:00","type":"agent_choice","content":"I","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.120729538+11:00","type":"agent_choice","content":" also","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.120950095+11:00","type":"agent_choice","content":" can","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.121205728+11:00","type":"agent_choice","content":"’t","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.121206632+11:00","type":"agent_choice","content":" “","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.121219001+11:00","type":"agent_choice","content":"call","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.12135673+11:00","type":"agent_choice","content":" the","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.12135868+11:00","type":"agent_choice","content":" MCP","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.121494831+11:00","type":"agent_choice","content":" origin","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.121623984+11:00","type":"agent_choice","content":" tool","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.121877362+11:00","type":"agent_choice","content":"”","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.121878917+11:00","type":"agent_choice","content":" because","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.122945222+11:00","type":"agent_choice","content":" no","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.128094871+11:00","type":"agent_choice","content":" MCP","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.142945178+11:00","type":"agent_choice","content":" tool","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.144338268+11:00","type":"agent_choice","content":" named","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.155359523+11:00","type":"agent_choice","content":" **","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.155749419+11:00","type":"agent_choice","content":"origin","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.158905984+11:00","type":"agent_choice","content":"**","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.166024611+11:00","type":"agent_choice","content":" (","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.17099119+11:00","type":"agent_choice","content":"or","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.171182734+11:00","type":"agent_choice","content":" any","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.171431941+11:00","type":"agent_choice","content":" “","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.179232036+11:00","type":"agent_choice","content":"M","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.187172305+11:00","type":"agent_choice","content":"CP","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.187666942+11:00","type":"agent_choice","content":" origin","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.195249639+11:00","type":"agent_choice","content":"”","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.199111691+11:00","type":"agent_choice","content":" tool","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.199479448+11:00","type":"agent_choice","content":")","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.211089796+11:00","type":"agent_choice","content":" is","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.218937836+11:00","type":"agent_choice","content":" available","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.218939779+11:00","type":"agent_choice","content":" to","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.218940469+11:00","type":"agent_choice","content":" me","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.231227368+11:00","type":"agent_choice","content":" in","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.23535741+11:00","type":"agent_choice","content":" the","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.235359076+11:00","type":"agent_choice","content":" current","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.243718248+11:00","type":"agent_choice","content":" tool","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.247185956+11:00","type":"agent_choice","content":" list","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.262879599+11:00","type":"agent_choice","content":".","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","message_id":"789ecb37-3925-4f1f-a181-bd4c2475e8a9"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.364419644+11:00","type":"message_added","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728"}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.364425757+11:00","type":"token_usage","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","usage":{"input_tokens":2130,"output_tokens":75,"context_length":2205,"context_limit":400000,"cost":0.00040829000000000006,"last_message":{"input_tokens":594,"output_tokens":75,"cached_input_tokens":1536,"cached_write_tokens":0,"service_tier":"default","Cost":0.00024327000000000002,"Model":"github-copilot/gpt-5.4-nano","finish_reason":"stop"}}}
+
+data: {"agent_name":"root","timestamp":"2026-10-13T21:38:56.364481022+11:00","type":"stream_stopped","session_id":"3b63ae59-6881-4c5b-9abb-140bbf28c728","reason":"normal","finish_reason":"stop"}
+

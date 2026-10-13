@@ -1,0 +1,97 @@
+{
+  "id": "5ab36647-f611-4504-83b2-312e2c6d1178",
+  "title": "Run Rejection Probe",
+  "messages": [
+    {
+      "agent_name": "",
+      "message": {
+        "role": "user",
+        "content": "Run the rejection probe.",
+        "created_at": "2026-10-13T21:30:02+11:00"
+      }
+    },
+    {
+      "agent_name": "root",
+      "message": {
+        "message_id": "ea7b6c6f-fc02-4842-a090-2d36fee4615b",
+        "role": "assistant",
+        "content": "",
+        "tool_calls": [
+          {
+            "id": "call_CUMFbMMpKNGr37jPfVeJ8cyX",
+            "type": "function",
+            "function": {
+              "name": "shell",
+              "arguments": "{\"cmd\":\"printf rejected-tool-ran \u003e rejection-result.txt\",\"cwd\":null,\"timeout\":30}"
+            }
+          }
+        ],
+        "tool_definitions": [
+          {
+            "name": "shell",
+            "category": "shell",
+            "description": "Executes the given shell command with bash on Linux. If unsure which shell syntax to use, call get_environment_info first.",
+            "parameters": {
+              "additionalProperties": false,
+              "properties": {
+                "cmd": { "description": "Shell command", "type": "string" },
+                "cwd": { "description": "Working directory (default \".\")", "type": "string" },
+                "timeout": { "description": "Timeout in seconds (default 30)", "type": "integer" }
+              },
+              "required": ["cmd"],
+              "type": "object"
+            },
+            "annotations": { "idempotentHint": false, "readOnlyHint": false, "title": "Shell" },
+            "outputSchema": { "type": "string" }
+          }
+        ],
+        "created_at": "2026-10-13T21:30:04+11:00",
+        "usage": {
+          "input_tokens": 222,
+          "output_tokens": 33,
+          "cached_input_tokens": 0,
+          "cached_write_tokens": 0,
+          "service_tier": "default"
+        },
+        "model": "github-copilot/gpt-5.4-nano",
+        "cost": 0.00008565000000000001,
+        "finish_reason": "tool_calls"
+      }
+    },
+    {
+      "agent_name": "root",
+      "message": {
+        "role": "tool",
+        "content": "The user rejected the tool call.",
+        "tool_call_id": "call_CUMFbMMpKNGr37jPfVeJ8cyX",
+        "is_error": true,
+        "created_at": "2026-10-13T21:30:04+11:00"
+      }
+    },
+    {
+      "agent_name": "root",
+      "message": {
+        "message_id": "bcf20f00-ad36-46e5-a236-bce6eab7a8f7",
+        "role": "assistant",
+        "content": "I ran the probe command as instructed:\n\n```bash\nprintf rejected-tool-ran \u003e rejection-result.txt\n```\n\n**Result:** The tool execution was blocked by the environment (the response indicates *“The user rejected the tool call.”*). Because the command itself didn’t actually run, there’s no guarantee that `rejection-result.txt` was created or written.\n\nIf you want, I can also check whether `rejection-result.txt` exists and what it contains—but that would require another command/tool call.",
+        "created_at": "2026-10-13T21:30:05+11:00",
+        "usage": {
+          "input_tokens": 272,
+          "output_tokens": 107,
+          "cached_input_tokens": 0,
+          "cached_write_tokens": 0,
+          "service_tier": "default"
+        },
+        "model": "github-copilot/gpt-5.4-nano",
+        "cost": 0.00018815,
+        "finish_reason": "stop"
+      }
+    }
+  ],
+  "created_at": "2026-10-13T21:30:02+11:00",
+  "tools_approved": false,
+  "safety_policy": "strict",
+  "input_tokens": 272,
+  "output_tokens": 107,
+  "working_dir": "/tmp/deckhand-runtime-probe.REDACTED/work"
+}

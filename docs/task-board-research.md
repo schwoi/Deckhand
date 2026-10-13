@@ -1,0 +1,27 @@
+# Docker Agent task board integration
+
+Verified on 2026-10-13 against installed Docker Agent **v1.150.0**, commit `5277e7842058fc3fbb9943a6e88bc05a1c8e6fe2`. `docker agent board --help` exposes the interactive command and global flags, with no card CRUD or headless options. Findings below use the matching upstream tag.
+
+## What the CLI board provides
+
+`docker agent board` is an orchestration pipeline: each card launches an agent in a **tmux session and isolated Git worktree**; advancing columns sends the destination column's prompt to that agent. Its default pipeline is Dev → Review → Push → Done, and projects/column prompts are configured globally. This is useful for parallel repository work, rather than a generic view of tasks inside a multi-agent run. [Command source](https://github.com/docker/docker-agent/blob/v1.150.0/cmd/root/board.go), [official feature documentation](https://github.com/docker/docker-agent/blob/v1.150.0/docs/features/board/index.md).
+
+The existing Go `pkg/board.App` owns the orchestration independently of the terminal UI and exports `Cards`, `CreateCard`, `MoveCard`, `DeleteCard`, `Diff`, and project/column operations. It requires tmux and acquires an exclusive process-lifetime board lock. There is **no board CRUD HTTP API** in the registered runtime routes and no CLI CRUD surface in this version. A helper using this package or an upstream headless board API would be needed for a native Deckhand board. [App source](https://github.com/docker/docker-agent/blob/v1.150.0/pkg/board/app.go), [HTTP routes](https://github.com/docker/docker-agent/blob/v1.150.0/pkg/server/server.go), [CLI source](https://github.com/docker/docker-agent/blob/v1.150.0/cmd/root/board.go).
+
+Cards are persisted at `<data-dir>/board/cards.json` (`~/.cagent` by default). The store loads its data into memory and uses an in-process mutex and atomic file replacement. Only one board owner may run for a state file: the exclusive `cards.json.lock` flock prevents independent engines from racing agent relaunches. Direct Deckhand edits to JSON while the CLI runs would bypass the owning engine's in-memory state and orchestration; atomic writes alone do not make that safe. [Store](https://github.com/docker/docker-agent/blob/v1.150.0/pkg/board/store.go), [process lock](https://github.com/docker/docker-agent/blob/v1.150.0/pkg/board/lock_unix.go), [App initialization](https://github.com/docker/docker-agent/blob/v1.150.0/pkg/board/app.go).
+
+Each card's running session has a Unix-socket control plane. The board reads session snapshots, tails replayable SSE events, and submits follow-up messages through that socket. These are **session** APIs, not board CRUD APIs. They are useful integration building blocks for a run inspector, but do not create cards, worktrees, or column transitions on their own. [Board client](https://github.com/docker/docker-agent/blob/v1.150.0/pkg/board/client.go).
+
+## Separate agent task toolset
+
+Docker Agent also has a distinct built-in `tasks` toolset. It stores persistent tasks shared across sessions, with title, description, priority, status (`pending`, `in_progress`, `done`, `blocked`), and dependencies. Tools create/get/update/delete/list tasks, select the next actionable task, and add/remove dependencies. Its JSON schema has no owner, run ID, or artifact links; those would need Deckhand metadata or an extension. Relative storage paths use the config directory or working-directory override, so isolated runs must receive deliberate storage paths. [Official task documentation](https://github.com/docker/docker-agent/blob/v1.150.0/docs/tools/tasks/index.md), [task implementation](https://github.com/docker/docker-agent/blob/v1.150.0/pkg/tools/builtin/tasks/tasks.go).
+
+Task mutations use both an instance mutex and a `<task-path>.lock` file lock, reload the store under lock, validate dependency cycles, and save atomically. Shared storage supports concurrent cooperating writers; `next_task` only reads an actionable task and does **not** atomically claim it, so assignment/claim semantics would need additional work for parallel workers. A frontend should respect effective blocked status rather than display raw status only. [Task implementation](https://github.com/docker/docker-agent/blob/v1.150.0/pkg/tools/builtin/tasks/tasks.go).
+
+## Recommendation
+
+For a **coding execution board**, reuse Docker Agent's orchestration through a single owning service: preferably an upstream headless board API, or a small version-pinned Go helper wrapping `pkg/board.App` and exposing a Deckhand-facing API. Deckhand's existing server would communicate with that adapter. Keep tmux/worktree lifecycle and board writes in that owner; concurrent CLI and helper engines cannot own the same board store.
+
+For a **team task board inside a run**, build a Deckhand Kanban view over the separate `tasks` toolset, with a deliberate run/project storage scope and links to agent events, configuration revision, and artifacts. Add a controlled mutation adapter using existing task logic or matching its locking/validation; do not infer a writable board REST endpoint from the session API.
+
+These can coexist: outer cards represent isolated coding jobs; inner tasks represent the team's plan and dependencies. Worktree isolation provides filesystem separation for code changes, while configuration snapshots and isolated runtimes remain separate Deckhand design work.

@@ -1,0 +1,8 @@
+{
+  "signal": "KILL",
+  "launch_mode": "detached",
+  "signal_target": "process_group",
+  "plugin_pgid": "301063",
+  "sleep_pid": "301240",
+  "descendant_survived": true
+}
