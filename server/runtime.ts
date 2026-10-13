@@ -82,11 +82,11 @@ class Runtime {
   }
 
   /** `serve api` reads the agents dir at start, so restart (debounced) after file changes. */
-  restartIfRunning(): void {
+  restartIfRunning(reason = 'agents changed'): void {
     clearTimeout(this.debounce)
     this.debounce = setTimeout(() => {
       if (this.state === 'running' || this.state === 'starting') {
-        this.log('[deckhand] agents changed, restarting runtime')
+        this.log(`[deckhand] ${reason}, restarting runtime`)
         this.restart().catch((e: unknown) => {
           this.state = 'error'
           this.error = `restart failed: ${e instanceof Error ? e.message : String(e)}`

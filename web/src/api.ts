@@ -5,10 +5,12 @@ import type {
   CliVersion,
   CommandResult,
   CreateAgentRequest,
+  CredentialsStatus,
   DoctorReport,
   EnvironmentInfo,
   EnvironmentInput,
   EnvironmentTest,
+  LiveModels,
   ModelInfo,
   RegistryPullRequest,
   RegistryPushRequest,
@@ -48,6 +50,8 @@ let envId = LOCAL_ENV
 export function setApiEnvironment(id: string): void {
   envId = id
 }
+/** The environment API calls currently go to; per-environment caches key on it. */
+export const apiEnvironment = (): string => envId
 const enc = encodeURIComponent
 const base = (local = false) => (local || envId === LOCAL_ENV ? '/api' : `/api/env/${enc(envId)}`)
 
@@ -253,7 +257,23 @@ export const api = {
     version: () => get<CliVersion>('/system/version'),
     toolsets: () => get<ToolsetInfo[]>('/system/toolsets'),
     models: (all = false) => get<ModelInfo[]>(`/system/models${all ? '?all=1' : ''}`),
+    liveModels: (q: { provider: string; base_url?: string; token_key?: string }) =>
+      post<LiveModels>('/system/models/live', q),
     doctor: () => get<DoctorReport>('/system/doctor'),
+  },
+  credentials: {
+    status: () => get<CredentialsStatus>('/credentials'),
+    setEnv: (name: string, value: string) =>
+      request<CredentialsStatus>('PUT', `/credentials/env/${enc(name)}`, { value }),
+    removeEnv: (name: string) =>
+      request<CredentialsStatus>('DELETE', `/credentials/env/${enc(name)}`),
+    chatgptLogin: () => post<CredentialsStatus>('/credentials/chatgpt/login'),
+    chatgptComplete: (url: string) =>
+      post<CredentialsStatus>('/credentials/chatgpt/complete', { url }),
+    chatgptCancel: () => request<CredentialsStatus>('DELETE', '/credentials/chatgpt/login'),
+    chatgptSignOut: () => request<CredentialsStatus>('DELETE', '/credentials/chatgpt'),
+    copilotLogin: () => post<CredentialsStatus>('/credentials/github-copilot/login'),
+    copilotCancel: () => request<CredentialsStatus>('DELETE', '/credentials/github-copilot/login'),
   },
   auth: () => localReq<AuthInfo>('GET', '/auth'),
   environments: {

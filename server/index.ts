@@ -29,6 +29,17 @@ import {
 } from './agents'
 import { CliError, runCli, runJson, ttlCache } from './cli'
 import {
+  cancelChatgptLogin,
+  cancelCopilotLogin,
+  chatgptSignOut,
+  completeChatgptLogin,
+  credentialsStatus,
+  removeEnvVar,
+  setEnvVar,
+  startChatgptLogin,
+  startCopilotLogin,
+} from './credentials'
+import {
   addEnvironment,
   assertTransport,
   authHeaders,
@@ -38,6 +49,7 @@ import {
   testEnvironment,
   updateEnvironment,
 } from './environments'
+import { clearLiveModels, liveModels } from './models'
 import { AGENTS_DIR, initPaths } from './paths'
 import { runtime } from './runtime'
 import { validateYaml } from './validate'
@@ -212,9 +224,74 @@ app.get('/api/system/models', async (c) => {
   return c.json(await modelsCache(all ? 'all' : 'default', () => runJson<ModelInfo[]>(args)))
 })
 
+// { provider } or, for a custom endpoint, { provider, base_url, token_key }. POST with a JSON
+// body so the cross-site checks apply: this resolves secrets and sends them to base_url.
+app.post('/api/system/models/live', async (c) => {
+  const b = await body(c)
+  return c.json(
+    await liveModels(str(b, 'provider'), str(b, 'base_url', true), str(b, 'token_key', true)),
+  )
+})
+
 app.get('/api/system/doctor', async (c) =>
   c.json(await runJson<DoctorReport>(['doctor', '--json'], { allowNonZero: true })),
 )
+
+// --- model credentials ---
+// Changes restart the runtime: it reads the env file once at start. The model list depends on
+// which credentials exist, so its cache goes too.
+
+function credentialsChanged(): void {
+  modelsCache.clear()
+  clearLiveModels()
+  runtime.restartIfRunning('credentials changed')
+}
+
+app.get('/api/credentials', (c) => c.json(credentialsStatus()))
+
+app.put('/api/credentials/env/:name', async (c) => {
+  setEnvVar(c.req.param('name'), str(await body(c), 'value'))
+  credentialsChanged()
+  return c.json(credentialsStatus())
+})
+
+app.delete('/api/credentials/env/:name', (c) => {
+  removeEnvVar(c.req.param('name'))
+  credentialsChanged()
+  return c.json(credentialsStatus())
+})
+
+app.post('/api/credentials/chatgpt/login', (c) => {
+  startChatgptLogin(credentialsChanged)
+  return c.json(credentialsStatus())
+})
+
+app.post('/api/credentials/chatgpt/complete', async (c) => {
+  await completeChatgptLogin(str(await body(c), 'url'))
+  credentialsChanged()
+  return c.json(credentialsStatus())
+})
+
+app.delete('/api/credentials/chatgpt/login', (c) => {
+  cancelChatgptLogin()
+  return c.json(credentialsStatus())
+})
+
+app.delete('/api/credentials/chatgpt', (c) => {
+  chatgptSignOut()
+  credentialsChanged()
+  return c.json(credentialsStatus())
+})
+
+app.post('/api/credentials/github-copilot/login', async (c) => {
+  await startCopilotLogin(credentialsChanged)
+  return c.json(credentialsStatus())
+})
+
+app.delete('/api/credentials/github-copilot/login', (c) => {
+  cancelCopilotLogin()
+  return c.json(credentialsStatus())
+})
 
 // --- registry ---
 

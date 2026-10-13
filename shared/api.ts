@@ -68,11 +68,18 @@ export interface ModelInfo {
   default?: boolean
 }
 
+/** POST /api/system/models/live: what the provider itself lists for this account. */
+export interface LiveModels {
+  models: string[]
+  error?: string // why the list is empty: no credential, rejected, unreachable…
+}
+
 export interface DoctorProvider {
   provider: string
   env_vars: string[]
   found: boolean
-  source?: string
+  env_var?: string // the variable that was found
+  source?: string // e.g. environment, config-env-file, chatgpt-login, docker-desktop
 }
 
 export interface DoctorReport {
@@ -84,6 +91,22 @@ export interface DoctorReport {
   env_vars?: { name: string; found: boolean; source?: string }[]
   issues: string[]
   [k: string]: unknown
+}
+
+// --- model credentials (docker-agent's env file and ChatGPT login) ---
+
+export interface CredentialsStatus {
+  envFile: string // absolute path of docker-agent's env file
+  envVars: string[] // names (never values) saved in it
+  chatgpt: {
+    account?: { email?: string; plan?: string }
+    flow?: { authUrl: string; listening: boolean } // listening: caught on localhost:1455
+    error?: string
+  }
+  githubCopilot: {
+    flow?: { userCode: string; verificationUri: string }
+    error?: string
+  }
 }
 
 // --- managed runtime (docker agent serve api child process) ---

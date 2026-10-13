@@ -1,17 +1,23 @@
-import type { ModelInfo } from '@shared/api'
+import type { DoctorReport, LiveModels, ModelInfo } from '@shared/api'
 import { useEffect, useState } from 'react'
-import { api } from '../api'
+import { api, apiEnvironment, errorText } from '../api'
 
-let catalog: Promise<ModelInfo[]> | null = null
+// Caches are per environment: each one is a different machine with its own CLI and credentials.
+const catalogs = new Map<string, Promise<ModelInfo[]>>()
 
-/** All known models (docker agent models --all), fetched once per page load. */
+/** All known models (docker agent models --all), fetched once per page load and environment. */
 export function useModelCatalog(): ModelInfo[] {
   const [models, setModels] = useState<ModelInfo[]>([])
   useEffect(() => {
-    catalog ??= api.system.models(true).catch(() => {
-      catalog = null
-      return []
-    })
+    const env = apiEnvironment()
+    let catalog = catalogs.get(env)
+    if (!catalog) {
+      catalog = api.system.models(true).catch(() => {
+        catalogs.delete(env)
+        return []
+      })
+      catalogs.set(env, catalog)
+    }
     let live = true
     catalog.then((m) => live && setModels(m))
     return () => {
@@ -19,6 +25,79 @@ export function useModelCatalog(): ModelInfo[] {
     }
   }, [])
   return models
+}
+
+const doctors = new Map<string, { at: number; report: Promise<DoctorReport | null> }>()
+
+/** Forget doctor reports, e.g. after credentials change. */
+export function invalidateDoctor(): void {
+  doctors.clear()
+}
+
+function doctorReport(): Promise<DoctorReport | null> {
+  const env = apiEnvironment()
+  const hit = doctors.get(env)
+  if (hit && Date.now() - hit.at < 30_000) return hit.report
+  const report = api.system.doctor().catch(() => null)
+  doctors.set(env, { at: Date.now(), report })
+  return report
+}
+
+/**
+ * docker agent doctor: which providers have credentials and the auto model. Shared briefly so
+ * every model entry doesn't run it; re-checked when the tab regains focus, so a key added on
+ * the System page or in another tab shows up.
+ */
+export function useDoctor(): DoctorReport | null {
+  const [report, setReport] = useState<DoctorReport | null>(null)
+  useEffect(() => {
+    let live = true
+    const load = () => {
+      if (document.visibilityState === 'visible') doctorReport().then((r) => live && setReport(r))
+    }
+    load()
+    window.addEventListener('focus', load)
+    document.addEventListener('visibilitychange', load)
+    return () => {
+      live = false
+      window.removeEventListener('focus', load)
+      document.removeEventListener('visibilitychange', load)
+    }
+  }, [])
+  return report
+}
+
+export interface LiveQuery {
+  provider: string
+  base_url?: string
+  token_key?: string
+}
+
+/**
+ * The models `provider` itself lists for this account (the server caches them for a few
+ * minutes). Debounced, since the provider is often being typed. `null` while loading.
+ */
+export function useLiveModels(q: LiveQuery | null): LiveModels | null {
+  const key = q?.provider
+    ? JSON.stringify([apiEnvironment(), q.provider, q.base_url, q.token_key])
+    : ''
+  const [result, setResult] = useState<{ key: string; value: LiveModels } | null>(null)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: key captures q
+  useEffect(() => {
+    if (!q?.provider) return
+    let live = true
+    const t = setTimeout(() => {
+      api.system
+        .liveModels(q)
+        .catch((e): LiveModels => ({ models: [], error: errorText(e) }))
+        .then((value) => live && setResult({ key, value }))
+    }, 300)
+    return () => {
+      live = false
+      clearTimeout(t)
+    }
+  }, [key])
+  return result?.key === key ? result.value : null
 }
 
 export function strList(v: unknown): string[] | undefined {

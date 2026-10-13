@@ -53,6 +53,24 @@ bun run start        # serves dist/ and the API on :4800
 
 Model API keys are read from the environment of the Deckhand server process (the same environment `docker agent` would use).
 
+### Model credentials
+
+*System → Providers* lets you add, replace and remove keys and sign in to subscription providers. It writes
+to the same places as `docker agent setup`, so the CLI and the runtime pick them up without flags:
+
+- **API keys** go to docker-agent's env file, `~/.config/cagent/.env` (mode 0600). Values never come back out
+  of the API. A key set in Deckhand's own environment takes precedence over that file, so those rows are read-only.
+- **ChatGPT** (`chatgpt` provider) signs in with your ChatGPT account in the browser and stores the login in
+  `~/.config/cagent/chatgpt-auth.json`; docker-agent refreshes it. OpenAI's redirect is fixed to `localhost:1455`,
+  which Deckhand listens on during a sign-in. When the browser is on another machine than Deckhand (a remote
+  environment, a container), that page will not load: paste its address into the dialog instead.
+- **GitHub Copilot** (`github-copilot` provider) uses GitHub's device flow and saves the token as `GITHUB_TOKEN`.
+  It uses the GitHub CLI's OAuth app by default; set `DECKHAND_GITHUB_CLIENT_ID` to use your own (device flow enabled).
+  You can also paste a fine-grained token with the *Copilot Requests* permission.
+
+Saving a credential restarts the runtime. In the Docker image, `~/.config/cagent` is outside the `/data` volume,
+so credentials saved there do not survive recreating the container.
+
 ### How the runtime is managed
 
 Deckhand runs one `docker-agent serve api <agents dir>` child process and proxies its HTTP API, including the

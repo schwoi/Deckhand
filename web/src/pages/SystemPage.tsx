@@ -1,4 +1,10 @@
-import type { CliVersion, DoctorReport, ModelInfo, ToolsetInfo } from '@shared/api'
+import type {
+  CliVersion,
+  CredentialsStatus,
+  DoctorReport,
+  ModelInfo,
+  ToolsetInfo,
+} from '@shared/api'
 import {
   Boxes,
   CircleCheck,
@@ -7,6 +13,7 @@ import {
   ExternalLink,
   KeyRound,
   Play,
+  Plus,
   RotateCw,
   Search,
   Square,
@@ -18,10 +25,12 @@ import { api, errorText } from '../api'
 import { Button } from '../components/ui/Button'
 import { Switch } from '../components/ui/form'
 import { Badge, Card, CardHeader, Code, Dot, PageHeader, Skeleton } from '../components/ui/misc'
+import { invalidateDoctor } from '../editor/hooks'
 import { relativeTime } from '../lib/util'
 import { useRuntime } from '../runtime'
+import { CredentialBadge, KeyDialog, OtherKeys, ProviderActions } from './credentials'
 
-/** Fetch once on mount (or when deps change); errors become a string. */
+/** Fetch on mount and when deps change, keeping the previous data meanwhile; errors become a string. */
 function useLoad<T>(
   fn: () => Promise<T>,
   deps: unknown[] = [],
@@ -33,7 +42,7 @@ function useLoad<T>(
   // biome-ignore lint/correctness/useExhaustiveDependencies: caller controls deps
   useEffect(() => {
     let live = true
-    setState({ data: null, error: null })
+    setState((s) => ({ data: s.data, error: null }))
     fn()
       .then((data) => live && setState({ data, error: null }))
       .catch((e) => live && setState({ data: null, error: errorText(e) }))
@@ -233,13 +242,35 @@ function RuntimeCard() {
 }
 
 function ProvidersCard() {
-  const { data, error } = useLoad<DoctorReport>(api.system.doctor)
+  const [version, setVersion] = useState(0)
+  const reload = () => {
+    invalidateDoctor()
+    setVersion((v) => v + 1)
+  }
+  const [adding, setAdding] = useState(false)
+  const { data, error } = useLoad<DoctorReport>(api.system.doctor, [version])
+  const { data: creds } = useLoad<CredentialsStatus>(api.credentials.status, [version])
+  const known = new Set((data?.providers ?? []).flatMap((p) => p.env_vars ?? []))
+  const otherKeys = (creds?.envVars ?? []).filter((n) => !known.has(n))
   return (
     <Card>
       <CardHeader
         icon={<KeyRound />}
         title="Providers"
-        description="Credentials found in your environment (docker agent doctor)."
+        description="Model credentials docker agent can use. Add keys or sign in here."
+        actions={
+          <Button size="sm" icon={<Plus />} onClick={() => setAdding(true)}>
+            Add key
+          </Button>
+        }
+      />
+      <KeyDialog
+        open={adding}
+        onClose={() => setAdding(false)}
+        title="Add a key"
+        names={[]}
+        envFile={creds?.envFile}
+        onSaved={reload}
       />
       {error && <ErrorLine error={error} />}
       {!data && !error && <LoadingRows n={4} />}
@@ -247,27 +278,24 @@ function ProvidersCard() {
         <div className="flex flex-col">
           <ul className="divide-y sm:hidden">
             {(data.providers ?? []).map((p) => (
-              <li key={p.provider} className="flex flex-col gap-1 px-4 py-2.5">
+              <li key={p.provider} className="flex flex-col gap-1.5 px-4 py-2.5">
                 <div className="flex items-center justify-between gap-3">
                   <span className="min-w-0 truncate font-mono text-sm">{p.provider}</span>
-                  {p.found ? (
-                    <Badge tone="success" title={p.source}>
-                      found{p.source ? ` · ${p.source}` : ''}
-                    </Badge>
-                  ) : (
-                    <Badge>missing</Badge>
-                  )}
+                  <CredentialBadge p={p} creds={creds} />
                 </div>
-                <div className="flex flex-wrap gap-x-2 gap-y-0.5">
-                  {p.env_vars?.length ? (
-                    p.env_vars.map((v) => (
-                      <span key={v} className="font-mono text-xs break-all text-muted">
-                        {v}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="text-xs text-faint">none required</span>
-                  )}
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex min-w-0 flex-wrap gap-x-2 gap-y-0.5">
+                    {p.env_vars?.length ? (
+                      p.env_vars.map((v) => (
+                        <span key={v} className="font-mono text-xs break-all text-muted">
+                          {v}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-xs text-faint">none required</span>
+                    )}
+                  </div>
+                  <ProviderActions p={p} creds={creds} onChanged={reload} />
                 </div>
               </li>
             ))}
@@ -277,7 +305,10 @@ function ProvidersCard() {
               <tr className="border-b text-left text-xs text-faint">
                 <th className="px-4 py-1.5 font-medium">Provider</th>
                 <th className="px-3 py-1.5 font-medium">Environment variables</th>
-                <th className="px-4 py-1.5 text-right font-medium">Status</th>
+                <th className="px-3 py-1.5 font-medium">Status</th>
+                <th className="px-4 py-1.5">
+                  <span className="sr-only">Actions</span>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -297,19 +328,17 @@ function ProvidersCard() {
                       )}
                     </span>
                   </td>
+                  <td className="px-3 py-1.5">
+                    <CredentialBadge p={p} creds={creds} />
+                  </td>
                   <td className="px-4 py-1.5 text-right">
-                    {p.found ? (
-                      <Badge tone="success" title={p.source}>
-                        found{p.source ? ` · ${p.source}` : ''}
-                      </Badge>
-                    ) : (
-                      <Badge>missing</Badge>
-                    )}
+                    <ProviderActions p={p} creds={creds} onChanged={reload} />
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+          <OtherKeys names={otherKeys} creds={creds} onChanged={reload} />
           <div className="grid grid-cols-1 gap-3 border-t px-4 py-3 text-base sm:grid-cols-2">
             <Fact label="Docker Model Runner">
               {data.dmr ? (
